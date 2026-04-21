@@ -1,0 +1,132 @@
+CMP 414/765: Artificial Intelligence
+
+Lehman College, City University of New York 
+
+
+Section
+01
+Instructor
+Liang Zhao
+Class Hours
+M/W 6:00 - 7:40 PM
+Email
+Liang.Zhao1@lehman.cuny.edu
+Room
+Office
+Carman B36
+Office Hours
+M/W 4:00 - 5:30 PM
+or by appointment
+ 
+
+Description
+
+This course introduces the basic concepts of Neural Networks and Deep Learning. Students will learn the basic model types used in Deep Learning and their suitability for various data domains such as text, images, and videos. By the end of this course, students will be able to extract patterns from real-world datasets by running several classes of deep learning methods using existing code via standard API calls. This course will introduce models and algorithms through concrete working examples with a moderate amount of theory. Python will be used as the primary programming language for this course, together with its main scientific libraries, in particular PyTorch, NumPy, Pandas, and Matplotlib.
+
+Prerequisites: CMP 338 Data Structures, or with department approval.
+ 
+Course objectives
+
+At the end of the course, students should be able to:
+
+1. Learn how to modify state-of-the-art deep learning architectures for a new dataset/task.
+
+2. Know the fundamental model types used in deep learning, e.g., Convolutional Neural Networks (CNNs), Recurrent Neural Networks (RNNs), and Generative Adversarial Networks (GANs).
+
+3. Understand the basic concepts of neural networks and deep learning methods.
+
+4. Know specific deep learning methods to tackle challenges in specific domains in computer vision, natural language processing, and audio processing.
+
+5. Be able to re-train and tune hyperparameters of several classes of deep learning methods, in particular CNNs, RNNs, and GANs, on real-world datasets.
+
+6. Be able to extract patterns from complex real-world image and text datasets by using deep learning
+
+methods.
+
+Grading Policy
+
+The grading for the course will be based on:
+
+Homework: 20%
+
+In-Class Tests: 20%
+
+Midterm Project: 30%
+
+Final Project: 30%
+
+Tentative Schedule
+
+Day
+Topics
+Readings
+1
+The AI Landscape, Python Introduction
+Class Notes
+2
+Intelligent Agents
+Class Notes
+3
+Motivating Examples 
+Chapter 1, Class Notes
+4
+Pretrained Neural Networks
+Chapter 2
+5
+Learning Mechanics
+Chapter 5
+6
+Neural Networks, 
+Chapter 6
+7
+Image Classification, Midterm Review
+Chapter 7
+8
+Test 1
+9
+Handling Tensors with PyTorch
+Chapter 3, 4
+10
+Cancer Detection Project
+Chapter 9, 10
+11
+Convolutional Neural Networks
+Chapter 8
+12
+Advanced Techniques
+Chapter 11, 12
+13
+Language Models
+Class Notes
+14
+Generative Models
+Class Notes
+15
+Ethical Issues with AI
+Class Notes
+16
+Final Review, Test 2
+Expectations
+
+ Students are expected to learn both the material covered in class and the material in the textbook and other assigned readings. Completing homework is an essential part of the learning experience.
+
+Required Textbook 
+
+Deep Learning with PyTorch by Eli Stevens, Luca Antiga, and Thomas Viehmann 
+Publisher: Manning
+Release Date: August 4, 2020
+ISBN-13: 978-1617295263
+ISBN-10: 1617295264 
+Honor Code:
+
+You are encouraged to work together on the overall design of the programs and homework. However, for specific programs and homework assignments, all work must be your own. You are responsible for knowing and following CUNY Policy on Academic Integrity (available from the Undergraduate Bulletin, Graduate Bulletin, or the Office of Academic Standards and Evaluations).
+
+Email:
+
+I will be communicating with you on a regular basis throughout the semester using your email address on Blackboard. You must check your email on a regular basis. There will be no acceptable excuse for missing an email announcement.
+
+Accommodating Disabilities: 
+
+Lehman College is committed to providing access to all programs and curricula to all students. Students with disabilities who may need classroom accommodations are encouraged to register with the Office of Student Disability Services. For more info, please contact the Office of Student Disability Services, Shuster Hall, Room 238 (Phone: 718-960-8441).
+
+ 

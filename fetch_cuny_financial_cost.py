@@ -84,6 +84,7 @@ async def fetch_cuny_financial_cost(
 
             await ctx.log("info","Fetching costs")
             html = await page.inner_html("div[id='PT_MAIN']")
+
             #html = await new_page.inner_html('div[id="requirements"]')
 
             # Extract fully rendered HTML

@@ -19,7 +19,7 @@ def get_otp():
     password = str(dotenv.get_key(loc, "CUNY_PASSWORD"))
     otp = TOTP(secret)
     toptime = otp.now()
-    return (email, password, toptime)
+    return email, password, toptime
 
 
 @cuny_mcp.tool(

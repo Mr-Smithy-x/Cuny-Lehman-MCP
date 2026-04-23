@@ -2,3 +2,11 @@ mcp
 playwright
 requests
 pyotp
+sounddevice
+soundfile
+torch>=2.4.0
+torchaudio>=2.4.0
+f5-tts>=1.0.0
+loguru
+bs4
+pypdf2

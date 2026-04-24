@@ -10,3 +10,4 @@ f5-tts>=1.0.0
 loguru
 bs4
 pypdf2
+pygame

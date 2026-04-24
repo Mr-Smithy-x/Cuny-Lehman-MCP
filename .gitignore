@@ -3,3 +3,6 @@
 .idea
 book_fetcher.py
 fetch_book.py
+pong_royale.py
+youtube_downloader.py
+record_audio_command.py

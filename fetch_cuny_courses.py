@@ -96,13 +96,13 @@ async def fetch_cuny_course(
 
             courses = await handle_criteria_page(new_page)
 
-            html = json.dumps(courses)
+            courses_json = json.dumps(courses)
 
             return {
                 "status": "success",
                 "url": url,
-                "html_length": len(html),
-                "html": html
+                "json_length": len(courses_json),
+                "json": courses_json
             }
 
         except Exception as e:

@@ -83,13 +83,13 @@ async def fetch_cuny_degree_progress(
 
             await handle_otp_page(page)
 
-            degree_information = json.dumps(await handle_degreeworks_page(page))
+            degree_information_json = json.dumps(await handle_degreeworks_page(page))
 
             return {
                 "status": "success",
                 "url": url,
-                "html_length": len(degree_information),
-                "html": degree_information
+                "json_length": len(degree_information_json),
+                "json": degree_information_json
             }
 
         except Exception as e:

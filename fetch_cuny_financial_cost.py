@@ -92,14 +92,14 @@ async def fetch_cuny_financial_cost(
             await page.wait_for_load_state('networkidle')
 
             await ctx.log("info","Fetching costs")
-            json_data = json.dumps(await handle_financial_page(page))
+            financial_cost_json = json.dumps(await handle_financial_page(page))
 
 
             return {
                 "status": "success",
                 "url": url,
-                "json_length": len(json_data),
-                "json": json_data
+                "json_length": len(financial_cost_json),
+                "json": financial_cost_json
             }
 
         except Exception as e:

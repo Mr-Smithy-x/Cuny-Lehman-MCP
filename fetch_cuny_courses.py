@@ -50,15 +50,12 @@ async def fetch_cuny_course(
 
             if "portaldown.cuny.edu" in page.url:
                 return {"status": "error", "url": url, "error": "Portal is down"}
+
             # Optional: wait for specific dynamic content to appear
             email, password, otp = get_otp()
             await ctx.info(f"Logging in as {email}")
-            await page.wait_for_selector("input[name=usernameDisplay]", timeout=timeout)
-
             await handle_login_page(page)
             await ctx.log("info","Entering OTP...")
-            await page.wait_for_selector('input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode', timeout=timeout)
-
             await handle_otp_page(page)
 
             #student center
@@ -77,12 +74,10 @@ async def fetch_cuny_course(
             new_page = await popup_info.value
             await ctx.info("Popup opened!")
 
-
             await new_page.wait_for_load_state('networkidle')
             await ctx.info(await new_page.title())
 
             courses = await handle_criteria_page(new_page)
-
             courses_json = json.dumps(courses)
 
             return {

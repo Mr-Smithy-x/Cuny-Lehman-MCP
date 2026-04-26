@@ -48,16 +48,11 @@ async def fetch_cuny_financial_cost(
 
             if "portaldown.cuny.edu" in page.url:
                 return {"status": "error", "url": url, "error": "Portal is down"}
+
             email, password, otp = get_otp()
             await ctx.info(f"Logging in as {email}")
-            await page.wait_for_selector("input[name=usernameDisplay]", timeout=timeout)
-
             await handle_login_page(page)
             await ctx.log("info", "Entering OTP...")
-            await page.wait_for_selector(
-                'input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode',
-                timeout=timeout)
-
             await handle_otp_page(page)
 
             #student center
@@ -77,7 +72,6 @@ async def fetch_cuny_financial_cost(
 
             await ctx.log("info","Fetching costs")
             financial_cost_json = json.dumps(await handle_financial_page(page))
-
 
             return {
                 "status": "success",

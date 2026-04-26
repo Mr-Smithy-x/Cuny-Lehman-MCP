@@ -44,7 +44,7 @@ async def handle_login_page(page: Page):
     :return: None
     """
     print("Login page loaded", page.url)
-    await page.wait_for_selector("input[name=usernameDisplay]", timeout=10000)
+    await page.wait_for_selector("input[name=usernameDisplay]", timeout=15000)
     email, password, otp = get_otp()
     await page.fill("input[name=usernameDisplay]", email)
     await page.fill("input[name=password]", password)
@@ -59,7 +59,7 @@ async def handle_otp_page(page: Page):
     :type page: Page
     :return: None
     """
-    await page.wait_for_selector("input[placeholder='Enter TOTP']", timeout=10000)
+    await page.wait_for_selector("input[placeholder='Enter TOTP']", timeout=15000)
     print("OTP page loaded", page.url)
     email, password, otp = get_otp()
     await page.fill("input[placeholder='Enter TOTP']", otp)

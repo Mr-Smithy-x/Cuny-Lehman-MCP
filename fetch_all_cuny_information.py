@@ -1,9 +1,11 @@
 import json
 import os
 import tracemalloc
-from typing import Literal
+from pathlib import Path
+from typing import Literal, Any
 
 from mcp.server.fastmcp import FastMCP, Context, Image
+from mcp.types import TextContent
 
 from cuny_core_functions import cuny_browser_login, l360
 
@@ -76,13 +78,34 @@ async def fetch_cuny_studentid(ctx: Context, typeOfCard: Literal["getEmplidCard"
         and its format.
     :rtype: list[Image]
     """
+    def get_image_path(image_name: str) -> list[Any] | list[Image] | list[TextContent]:
+        if typeOfCard == "both":
+            response = []
+            if Path(os.getcwd() + f"/getEmplidCard.png").exists():
+                response.append(Image(path=os.getcwd() + f"/getEmplidCard.png", format='png'))
+            if Path(os.getcwd() + f"/getLibraryIdCard.png").exists():
+                response.append(Image(path=os.getcwd() + f"/getLibraryIdCard.png", format='png'))
+            if len(response) == 0:
+                response.append(
+                    TextContent(type="text", text=f"No card(s) found")
+                )
+            return response
+        elif Path(os.getcwd() + f"/{typeOfCard}.png").exists():
+            return [Image(path=os.getcwd() + f"/{typeOfCard}.png", format='png')]
+        else:
+            return [TextContent(type="text", text=f"No card(s) found")]
+
     await ctx.info("Fetching CUNY Student ID")
+    result = get_image_path(typeOfCard)
+    if result[0] is not TextContent:
+        return result
+    await ctx.info(
+        "CUNY Student ID not found in cache, fetching CUNY Student ID"
+    )
     results = await l360(headless=True, typeOfCard=typeOfCard)
     await ctx.info("CUNY Student ID fetched")
-    if typeOfCard == "both":
-        return [ Image(path=os.getcwd() + f"/getEmplidCard.png", format='png'), Image(path=os.getcwd() + f"/getLibraryIdCard.png", format='png') ]
-    else:
-        return [ Image(path=os.getcwd() + f"/{typeOfCard}.png", format='png') ]
+    return get_image_path(typeOfCard)
+
 
 if __name__ == "__main__":
     # Runs MCP server over stdio by default

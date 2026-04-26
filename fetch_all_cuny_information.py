@@ -1,13 +1,11 @@
-import base64
 import json
 import os
 import tracemalloc
 from typing import Literal
 
 from mcp.server.fastmcp import FastMCP, Context, Image
-from mcp.types import ImageContent
 
-from test_cuny import cuny_browser_login, l360
+from cuny_core_functions import cuny_browser_login, l360
 
 cuny_info_mcp = FastMCP("cuny-info-fetcher")
 

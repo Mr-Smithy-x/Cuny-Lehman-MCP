@@ -1,25 +1,12 @@
 import json
 import tracemalloc
 
-import dotenv
 from mcp.server.fastmcp import FastMCP, Context
 from playwright.async_api import async_playwright
-from pyotp import TOTP
 
-from test_cuny import handle_login_page, handle_otp_page, handle_criteria_page, term_courses
+from cuny_core_functions import handle_login_page, handle_otp_page, handle_criteria_page, get_otp
 
 cuny_mcp = FastMCP("cuny-courses-fetcher")
-
-
-def get_otp():
-    loc = dotenv.find_dotenv('.env')
-    env = dotenv.load_dotenv(loc)
-    secret = str(dotenv.get_key(loc, "CUNY_TOPT"))
-    email = str(dotenv.get_key(loc, "CUNY_EMAIL"))
-    password = str(dotenv.get_key(loc, "CUNY_PASSWORD"))
-    otp = TOTP(secret)
-    toptime = otp.now()
-    return email, password, toptime
 
 
 @cuny_mcp.tool(

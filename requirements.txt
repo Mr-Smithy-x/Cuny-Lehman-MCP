@@ -11,3 +11,6 @@ loguru
 bs4
 pypdf2
 pygame
+
+typing-extensions
+python-dotenv

@@ -8,18 +8,31 @@ import tracemalloc
 
 from typing_extensions import Literal
 
-"""
-login url
-https://ssologin.cuny.edu/oam/server/obrareq.cgi
 
-otp url
-https://ssologin.cuny.edu/oaa-totp-factor/rui/index.html
+def get_otp():
+    """
+    login url
+    https://ssologin.cuny.edu/oam/server/obrareq.cgi
 
-"""
+    otp url
+    https://ssologin.cuny.edu/oaa-totp-factor/rui/index.html
+    """
+    loc = dotenv.find_dotenv('.env')
+    env = dotenv.load_dotenv(loc)
+    secret = str(dotenv.get_key(loc, "CUNY_TOPT"))
+    email = str(dotenv.get_key(loc, "CUNY_EMAIL"))
+    password = str(dotenv.get_key(loc, "CUNY_PASSWORD"))
+    otp = TOTP(secret)
+    toptime = otp.now()
+    return (email, password, toptime)
+
+
 terms_list = dict()
 term_courses = dict()
 financial_semester = dict()
 degree_information = dict()
+
+
 
 
 async def handle_login_page(page: Page):
@@ -291,16 +304,6 @@ async def cuny_browser_login(url: str, headless: bool = True):
         await browser.close()
         return { "terms": terms_list,"courses": term_courses,"tuition": financial_semester, "degree_information": degree_information }
 
-
-def get_otp():
-    loc = dotenv.find_dotenv('.env')
-    env = dotenv.load_dotenv(loc)
-    secret = str(dotenv.get_key(loc, "CUNY_TOPT"))
-    email = str(dotenv.get_key(loc, "CUNY_EMAIL"))
-    password = str(dotenv.get_key(loc, "CUNY_PASSWORD"))
-    otp = TOTP(secret)
-    toptime = otp.now()
-    return (email, password, toptime)
 
 
 async def l360(headless: bool = True, typeOfCard: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard"):

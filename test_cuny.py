@@ -6,6 +6,8 @@ import asyncio
 import dotenv
 import tracemalloc
 
+from typing_extensions import Literal
+
 """
 login url
 https://ssologin.cuny.edu/oam/server/obrareq.cgi
@@ -173,14 +175,37 @@ async def lehman360(page: Page):
 
     await fetch_cuny_id(page)
 
-async def fetch_cuny_id(page: Page) -> bytes:
-    #getLibraryIdCard
-    #getEmplidCard
-    await page.wait_for_selector("#getEmplidCard")
-    await page.click("#getEmplidCard")
-    await asyncio.sleep(2)
-    img = await page.locator("div[id='swal2-content']").screenshot(path="screenshot.png")
-    return img
+async def fetch_cuny_id(page: Page, typeOfCard: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard") -> bytes:
+    """
+    Fetches a screenshot of a specific CUNY ID card type by interacting with a web page. The function waits for a
+    specific card type button to appear on the page, clicks it, waits for the content to load, and then captures
+    a screenshot of the resulting dialog content.
+
+    :param page: The Playwright Page object to interact with the web page.
+    :type page: Page
+    :param typeOfCard: Specifies the type of CUNY ID card to fetch. Should be either "getEmplidCard" or "getLibraryIdCard".
+                       Defaults to "getEmplidCard". If set to "both", both types of cards will be fetched in one call.
+                       No need to call the function twice.
+    :type typeOfCard: Literal["getEmplidCard", "getLibraryIdCard", "both"]
+    :return: A screenshot of the CUNY ID card content as bytes.
+    :rtype: bytes
+    """
+    if typeOfCard == "both":
+        await page.wait_for_selector("#getEmplidCard")
+        await page.click("#getEmplidCard")
+        await asyncio.sleep(2)
+        await page.locator("div[id='swal2-content']").screenshot(path=f"getEmplidCard.png")
+        await asyncio.sleep(1)
+        await page.click("button.swal2-close")
+        await page.wait_for_selector("#getLibraryIdCard")
+        await page.click("#getLibraryIdCard")
+        await asyncio.sleep(2)
+        return await page.locator("div[id='swal2-content']").screenshot(path=f"getLibraryIdCard.png")
+    else:
+        await page.wait_for_selector(f"#{typeOfCard}")
+        await page.click(f"#{typeOfCard}")
+        await asyncio.sleep(2)
+        return await page.locator("div[id='swal2-content']").screenshot(path=f"{typeOfCard}.png")
 
 async def function(page: Page):
     """
@@ -235,6 +260,9 @@ async def cuny_browser_login(url: str, headless: bool = True):
         page.on("domcontentloaded", function)
         await page.goto(url, wait_until="domcontentloaded")
 
+        if "portaldown.cuny.edu" in page.url:
+            return {"status": "error", "url": url, "error": "Portal is down"}
+
         await page.wait_for_url("**/psc/cnyihprd/EMPLOYEE/EMPL/c/**", wait_until="domcontentloaded")
         await asyncio.sleep(1)
 
@@ -275,7 +303,22 @@ def get_otp():
     return (email, password, toptime)
 
 
-async def l360(headless: bool = True):
+async def l360(headless: bool = True, typeOfCard: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard"):
+    """
+    Fetches a user's CUNY ID from the Lehman 360 portal.
+
+    This function uses Playwright to interact with the Lehman 360 portal and retrieve the
+    user's CUNY ID. It navigates through the login and OTP verification pages before
+    fetching the desired card information based on the specified card type.
+
+    :param headless: Determines whether the browser should run in headless mode.
+    :type headless: bool
+    :param typeOfCard: The type of card to fetch. Must be one of "getEmplidCard" or
+        "getLibraryIdCard". Defaults to "getEmplidCard".
+    :type typeOfCard: Literal["getEmplidCard", "getLibraryIdCard"]
+    :return: The fetched CUNY ID based on the specified card type.
+    :rtype: str
+    """
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=headless)
 
@@ -284,14 +327,14 @@ async def l360(headless: bool = True):
         await page.goto("https://lehman360.lehman.edu", wait_until="networkidle")
         await handle_login_page(page)
         await handle_otp_page(page)
-        return await fetch_cuny_id(page)
+        return await fetch_cuny_id(page, typeOfCard=typeOfCard)
 
 async def main():
     tracemalloc.start()
     login_url = "http://cunyfirst.cuny.edu/"
     #await login(login_url, wait_for_selector="input[name=usernameDisplay]")
     #results = await cuny_browser_login(login_url, headless=False)
-    #results = await l360(headless=False)
+    #results = await l360(headless=False, typeOfCard="both")
     #print(json.dumps(results))
 
     #print(f"Current OTP: {otp}")

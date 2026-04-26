@@ -2,6 +2,8 @@ import base64
 import json
 import os
 import tracemalloc
+from typing import Literal
+
 from mcp.server.fastmcp import FastMCP, Context, Image
 from mcp.types import ImageContent
 
@@ -56,12 +58,33 @@ async def fetch_cuny_information(
     title="Fetch All Cuny Student ID",
     name="fetch_cuny_studentid"
 )
-async def fetch_cuny_studentid(ctx: Context):
-    await ctx.info("Fetching CUNY Student ID")
-    results = await l360(headless=True)
-    await ctx.info("CUNY Student ID fetched")
+async def fetch_cuny_studentid(ctx: Context, typeOfCard: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard"):
+    """
+    Fetches the CUNY Student ID for the user based on the specified type of card.
 
-    return [ Image(path=os.getcwd() + "/screenshot.png", format='png') ]
+    The function communicates with an external system to retrieve the required
+    CUNY Student ID. The specific type of card to fetch is controlled by the
+    `typeOfCard` parameter. The function operates asynchronously and will notify
+    the user through the context object when the operation begins and completes.
+
+    :param ctx: The context object used for providing information updates during
+        the execution of the function.
+    :type ctx: Context
+    :param typeOfCard: The type of card for which the CUNY Student ID should be
+        fetched. Valid options are "getEmplidCard" or "getLibraryIdCard" or "both". Defaults
+        to "getEmplidCard". If set to both, both types of cards will be fetched in one call
+        no need to call the function twice.
+    :return: A list containing an image with the path to the fetched card image
+        and its format.
+    :rtype: list[Image]
+    """
+    await ctx.info("Fetching CUNY Student ID")
+    results = await l360(headless=True, typeOfCard=typeOfCard)
+    await ctx.info("CUNY Student ID fetched")
+    if typeOfCard == "both":
+        return [ Image(path=os.getcwd() + f"/getEmplidCard.png", format='png'), Image(path=os.getcwd() + f"/getLibraryIdCard.png", format='png') ]
+    else:
+        return [ Image(path=os.getcwd() + f"/{typeOfCard}.png", format='png') ]
 
 if __name__ == "__main__":
     # Runs MCP server over stdio by default

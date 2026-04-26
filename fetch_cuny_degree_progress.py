@@ -69,6 +69,9 @@ async def fetch_cuny_degree_progress(
             # Navigate and wait for JS/network to settle
             await page.goto(url, wait_until="networkidle", timeout=timeout)
 
+
+            if "portaldown.cuny.edu" in page.url:
+                return {"status": "error", "url": url, "error": "Portal is down"}
             # Optional: wait for specific dynamic content to appear
             email, password, otp = get_otp()
             await ctx.info(f"Logging in as {email}")

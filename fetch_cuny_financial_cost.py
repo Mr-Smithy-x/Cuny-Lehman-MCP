@@ -62,6 +62,8 @@ async def fetch_cuny_financial_cost(
             # Navigate and wait for JS/network to settle
             await page.goto(url, wait_until="networkidle", timeout=timeout)
 
+            if "portaldown.cuny.edu" in page.url:
+                return {"status": "error", "url": url, "error": "Portal is down"}
             email, password, otp = get_otp()
             await ctx.info(f"Logging in as {email}")
             await page.wait_for_selector("input[name=usernameDisplay]", timeout=timeout)

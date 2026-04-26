@@ -6,3 +6,9 @@ fetch_book.py
 pong_royale.py
 youtube_downloader.py
 record_audio_command.py
+*.png
+*.jpg
+*.mp4
+*.mp3
+*.mkv
+*.webm

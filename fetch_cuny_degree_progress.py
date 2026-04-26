@@ -1,4 +1,6 @@
 import asyncio
+import json
+
 from mcp.server.fastmcp import FastMCP, Context
 from playwright.async_api import async_playwright
 from pyotp import TOTP
@@ -7,6 +9,7 @@ import asyncio
 import dotenv
 import tracemalloc
 
+from test_cuny import handle_login_page, handle_otp_page, handle_degreeworks_page
 
 cuny_degree_mcp = FastMCP("cuny-degree-fetcher")
 
@@ -31,12 +34,32 @@ async def fetch_cuny_degree_progress(
     ctx: Context,
     timeout: int = 30000,
 ) -> dict:
+    """
+    Fetches the CUNY degree progress, including transcript, grades, and other academic
+    information, by interacting with the web interface dynamically using Playwright.
+
+    This function automates the login process, handles multi-factor authentication (MFA),
+    navigates to the student's dashboard, and extracts the rendered HTML content to
+    provide the requested academic details.
+
+    :param ctx: The application context, used for logging information during execution.
+                Assumes an object with a `log` method for log messages.
+                Type: Context
+    :param timeout: The time in milliseconds to wait for operations such as page navigation
+                    or element selection before timing out. Defaults to 30000 (30 seconds).
+                    Type: int
+    :return: A dictionary containing the following keys:
+             - "status": A string indicating the outcome ("success" or "error").
+             - "url": The URL used for the operation.
+             - "html_length": The length of the extracted HTML content if successful.
+             - "html": The extracted HTML content if successful.
+             - "error": A string description of the error, only present if the operation
+               fails.
+             Type: dict
+    """
     tracemalloc.start()
     url = "https://degreeworks.cuny.edu/Dashboard_lc"
-    """
-    Fetch fully JavaScript-rendered HTML from a URL.
-    Returns a dict with status, html, and metadata for better AI parsing.
-    """
+
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context()
@@ -47,41 +70,23 @@ async def fetch_cuny_degree_progress(
             await page.goto(url, wait_until="networkidle", timeout=timeout)
 
             # Optional: wait for specific dynamic content to appear
-            await ctx.log("info","Logging in...")
+            email, password, otp = get_otp()
+            await ctx.info(f"Logging in as {email}")
             await page.wait_for_selector("input[name=usernameDisplay]", timeout=timeout)
 
-            email, password, otp = get_otp()
-
-            await page.fill("input[name=usernameDisplay]", email)
-            await page.fill("input[name=password]", password)
-            await page.click("button[type=submit]")
-
-
+            await handle_login_page(page)
             await ctx.log("info","Entering OTP...")
             await page.wait_for_selector('input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode', timeout=timeout)
 
-            email, password, otp = get_otp()
+            await handle_otp_page(page)
 
-            await ctx.log("info","Logging in as {}".format(email))
-            await page.fill('input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode', otp)
-            await page.wait_for_selector("button[class=oj-button-button]", timeout=timeout)
-            await page.click("button[class=oj-button-button]")
-
-
-            await page.wait_for_load_state('networkidle')
-
-            await page.wait_for_selector("div[id='student-details']", timeout=timeout)
-            # Extract fully rendered HTML
-            #html = await page.content()
-            html = await page.inner_html("main[id='main-content']")
-            screenshot = await page.screenshot(path="screenshot.png")
-
+            degree_information = json.dumps(await handle_degreeworks_page(page))
 
             return {
                 "status": "success",
                 "url": url,
-                "html_length": len(html),
-                "html": html
+                "html_length": len(degree_information),
+                "html": degree_information
             }
 
         except Exception as e:

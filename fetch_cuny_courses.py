@@ -1,12 +1,12 @@
-import asyncio
+import json
+import tracemalloc
+
+import dotenv
 from mcp.server.fastmcp import FastMCP, Context
 from playwright.async_api import async_playwright
 from pyotp import TOTP
-from playwright.async_api import async_playwright
-import asyncio
-import dotenv
-import tracemalloc
 
+from test_cuny import handle_login_page, handle_otp_page, handle_criteria_page, term_courses
 
 cuny_mcp = FastMCP("cuny-courses-fetcher")
 
@@ -31,12 +31,27 @@ async def fetch_cuny_course(
     ctx: Context,
     timeout: int = 30000,
 ) -> dict:
+    """
+    A coroutine that fetches CUNY course schedules and details from the CUNY First platform.
+
+    This function utilizes Playwright for browser automation and performs tasks such as
+    login, OTP entry, navigation to the course details section, and extraction of rendered
+    HTML content. The resulting information, including the status, URL, and extracted
+    HTML data, is returned as a dictionary.
+
+    :param ctx: The asynchronous context object used for logging and other utility methods.
+    :type ctx: Context
+    :param timeout: The maximum time, in milliseconds, to wait for page actions like navigation,
+        element rendering, or dynamic content to load. Defaults to 30000 milliseconds.
+    :type timeout: int
+    :return: A dictionary containing the result of the operation. On success, it includes the
+        status as "success," the source URL, and rendered HTML information such as length and
+        content. On error, it returns the status as "error," the source URL, and the error message.
+    :rtype: dict
+    """
     tracemalloc.start()
     url = "http://cunyfirst.cuny.edu/"
-    """
-    Fetch fully JavaScript-rendered HTML from a URL.
-    Returns a dict with status, html, and metadata for better AI parsing.
-    """
+
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context()
@@ -47,25 +62,15 @@ async def fetch_cuny_course(
             await page.goto(url, wait_until="networkidle", timeout=timeout)
 
             # Optional: wait for specific dynamic content to appear
-            await ctx.log("info","Logging in...")
+            email, password, otp = get_otp()
+            await ctx.info(f"Logging in as {email}")
             await page.wait_for_selector("input[name=usernameDisplay]", timeout=timeout)
 
-            email, password, otp = get_otp()
-
-            await page.fill("input[name=usernameDisplay]", email)
-            await page.fill("input[name=password]", password)
-            await page.click("button[type=submit]")
-
-
+            await handle_login_page(page)
             await ctx.log("info","Entering OTP...")
             await page.wait_for_selector('input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode', timeout=timeout)
 
-            email, password, otp = get_otp()
-
-            await ctx.log("info","Logging in as {}".format(email))
-            await page.fill('input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode', otp)
-            await page.wait_for_selector("button[class=oj-button-button]", timeout=timeout)
-            await page.click("button[class=oj-button-button]")
+            await handle_otp_page(page)
 
             #student center
             await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$1']", timeout=timeout)
@@ -75,31 +80,21 @@ async def fetch_cuny_course(
             await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$13']", timeout=timeout)
 
             await ctx.log("info","Going to schedule builder")
-            #new_page_future = context.wait_for_event("page")
+
             async with page.expect_popup() as popup_info:
                 await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$13']")
 
-            print("Waiting for popup...")
+            await ctx.info("Waiting for popup...")
             new_page = await popup_info.value
-            print("Popup opened!")
+            await ctx.info("Popup opened!")
 
 
             await new_page.wait_for_load_state('networkidle')
+            await ctx.info(await new_page.title())
 
-            print(await new_page.title())
-            await new_page.evaluate("() => this.window.UU.caseTermContinue(3202630);")
-            await asyncio.sleep(1)
-            #await new_page.evaluate("() => this.window.AS.openCourseBrowser();")
+            courses = await handle_criteria_page(new_page)
 
-
-            await ctx.log("info","Fetching courses")
-            html = await new_page.inner_html('div[id="legend_box"]')
-            #html = await new_page.inner_html('div[id="requirements"]')
-
-            # Extract fully rendered HTML
-            #html = await page.content()
-            screenshot = await page.screenshot(path="screenshot.png")
-
+            html = json.dumps(courses)
 
             return {
                 "status": "success",

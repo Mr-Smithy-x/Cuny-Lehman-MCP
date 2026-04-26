@@ -1,4 +1,6 @@
 import asyncio
+import json
+
 from mcp.server.fastmcp import FastMCP, Context
 from playwright.async_api import async_playwright
 from pyotp import TOTP
@@ -7,6 +9,7 @@ import asyncio
 import dotenv
 import tracemalloc
 
+from test_cuny import handle_login_page, handle_otp_page, handle_financial_page
 
 cuny_finance_mcp = FastMCP("cuny-finance-fetcher")
 
@@ -31,12 +34,25 @@ async def fetch_cuny_financial_cost(
     ctx: Context,
     timeout: int = 30000,
 ) -> dict:
+    """
+    Fetch the financial cost of CUNY courses per semester by navigating CUNYFirst's
+    student center and retrieving rendered HTML content after logging in.
+
+    This asynchronous function uses Playwright to automate browser interactions,
+    handles login with email, password, and OTP (one-time password), and extracts
+    all relevant information regarding semester costs.
+
+    :param ctx: Context instance for logging and runtime operation.
+    :type ctx: Context
+    :param timeout: Timeout value in milliseconds for waiting operations,
+        such as loading pages or waiting for selectors.
+    :type timeout: int
+    :return: Dictionary containing the status of the fetch operation,
+        the URL accessed, and either the rendered HTML or an error message.
+    :rtype: dict
+    """
     tracemalloc.start()
     url = "http://cunyfirst.cuny.edu/"
-    """
-    Fetch fully JavaScript-rendered HTML from a URL.
-    Returns a dict with status, html, and metadata for better AI parsing.
-    """
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context()
@@ -46,26 +62,17 @@ async def fetch_cuny_financial_cost(
             # Navigate and wait for JS/network to settle
             await page.goto(url, wait_until="networkidle", timeout=timeout)
 
-            # Optional: wait for specific dynamic content to appear
-            await ctx.log("info","Logging in...")
+            email, password, otp = get_otp()
+            await ctx.info(f"Logging in as {email}")
             await page.wait_for_selector("input[name=usernameDisplay]", timeout=timeout)
 
-            email, password, otp = get_otp()
+            await handle_login_page(page)
+            await ctx.log("info", "Entering OTP...")
+            await page.wait_for_selector(
+                'input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode',
+                timeout=timeout)
 
-            await page.fill("input[name=usernameDisplay]", email)
-            await page.fill("input[name=password]", password)
-            await page.click("button[type=submit]")
-
-
-            await ctx.log("info","Entering OTP...")
-            await page.wait_for_selector('input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode', timeout=timeout)
-
-            email, password, otp = get_otp()
-
-            await ctx.log("info","Logging in as {}".format(email))
-            await page.fill('input[placeholder="Enter TOTP"].oj-inputtext-input.oj-text-field-input.oj-component-initnode', otp)
-            await page.wait_for_selector("button[class=oj-button-button]", timeout=timeout)
-            await page.click("button[class=oj-button-button]")
+            await handle_otp_page(page)
 
             #student center
             await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$1']", timeout=timeout)
@@ -83,20 +90,14 @@ async def fetch_cuny_financial_cost(
             await page.wait_for_load_state('networkidle')
 
             await ctx.log("info","Fetching costs")
-            html = await page.inner_html("div[id='PT_MAIN']")
-
-            #html = await new_page.inner_html('div[id="requirements"]')
-
-            # Extract fully rendered HTML
-            #html = await page.content()
-            screenshot = await page.screenshot(path="screenshot.png")
+            json_data = json.dumps(await handle_financial_page(page))
 
 
             return {
                 "status": "success",
                 "url": url,
-                "html_length": len(html),
-                "html": html
+                "json_length": len(json_data),
+                "json": json_data
             }
 
         except Exception as e:

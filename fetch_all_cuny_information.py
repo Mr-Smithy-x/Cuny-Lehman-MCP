@@ -1,29 +1,13 @@
-import asyncio
+import base64
 import json
-
-from mcp.server.fastmcp import FastMCP, Context
-from playwright.async_api import async_playwright
-from pyotp import TOTP
-from playwright.async_api import async_playwright
-import asyncio
-import dotenv
+import os
 import tracemalloc
+from mcp.server.fastmcp import FastMCP, Context, Image
+from mcp.types import ImageContent
 
-from test_cuny import cuny_browser_login
+from test_cuny import cuny_browser_login, l360
 
 cuny_info_mcp = FastMCP("cuny-info-fetcher")
-
-
-def get_otp():
-    loc = dotenv.find_dotenv('.env')
-    env = dotenv.load_dotenv(loc)
-    secret = str(dotenv.get_key(loc, "CUNY_TOPT"))
-    email = str(dotenv.get_key(loc, "CUNY_EMAIL"))
-    password = str(dotenv.get_key(loc, "CUNY_PASSWORD"))
-    otp = TOTP(secret)
-    toptime = otp.now()
-    return email, password, toptime
-
 
 @cuny_info_mcp.tool(
     description="This is a server to fetch all cuny information such as financial tuition and cost, degree information and courses taking and current courses in progress. This function is an all in one function that should be used over the single functions as the single function takes too much time to fetch the information however this function is much quicker because it does everything all at once.",
@@ -34,12 +18,23 @@ async def fetch_cuny_information(
     ctx: Context,
     headless: bool = True,
 ) -> dict:
+    """
+    Fetches all information from CUNY, including data on financial tuition and cost, degree
+    information, current and in-progress courses, and more. This function consolidates the
+    execution of multiple individual operations, making it more time-efficient compared to
+    using separate functions.
+
+    :param ctx: The context required for executing the function.
+    :type ctx: Context
+    :param headless: Indicates whether the browser should operate in headless mode. Defaults to True.
+    :type headless: bool
+    :return: A dictionary containing the result of the operation. The dictionary includes the
+        status (success or error), the CUNY URL, and either the serialized JSON data or an
+        error message in case of a failure.
+    :rtype: dict
+    """
     tracemalloc.start()
     url = "http://cunyfirst.cuny.edu/"
-    """
-    Fetch fully JavaScript-rendered HTML from a URL.
-    Returns a dict with status, html, and metadata for better AI parsing.
-    """
     try:
         content = await cuny_browser_login(url, headless=headless)
         jsonStr = json.dumps(content)
@@ -55,6 +50,18 @@ async def fetch_cuny_information(
             "url": url,
             "error": str(e)
         }
+
+@cuny_info_mcp.tool(
+    description="This function is used to fetch the cuny student ID of the user.",
+    title="Fetch All Cuny Student ID",
+    name="fetch_cuny_studentid"
+)
+async def fetch_cuny_studentid(ctx: Context):
+    await ctx.info("Fetching CUNY Student ID")
+    results = await l360(headless=True)
+    await ctx.info("CUNY Student ID fetched")
+
+    return [ Image(path=os.getcwd() + "/screenshot.png", format='png') ]
 
 if __name__ == "__main__":
     # Runs MCP server over stdio by default

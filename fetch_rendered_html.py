@@ -16,8 +16,27 @@ async def fetch_rendered_html(
         timeout: int = 30000
 ) -> dict:
     """
-    Fetch fully JavaScript-rendered HTML from a URL.
-    Returns a dict with status, html, and metadata for better AI parsing.
+    Fetches and returns the fully rendered HTML content of a webpage.
+
+    This function utilizes Playwright to render the page in a headless browser,
+    allowing it to capture content from dynamic pages. Users can optionally wait
+    for a specific DOM selector to appear before extracting the HTML.
+
+    :param url: The URL of the webpage to fetch.
+    :type url: str
+
+    :param wait_for_selector: Optional CSS selector to wait for before fetching
+        the webpage's content, allowing dynamic page elements to load.
+    :type wait_for_selector: str | None
+
+    :param timeout: Time in milliseconds to wait for page load and optional
+        selector appearance. Defaults to 30000 (30 seconds).
+    :type timeout: int
+
+    :return: A dictionary containing the operation status, the URL of the
+        webpage, the length of the fetched HTML content, and the rendered HTML.
+        If an error occurs, returns a dictionary with the status and error details.
+    :rtype: dict
     """
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)

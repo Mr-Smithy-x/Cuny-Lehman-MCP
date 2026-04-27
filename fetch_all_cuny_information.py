@@ -110,8 +110,8 @@ async def fetch_cuny_studentid(ctx: Context, typeOfCard: Literal["getEmplidCard"
     title="Search Courses on CUNY",
     name="search_courses_on_cuny"
 )
-async def search_courses_on_cuny(ctx: Context, query: str):
-    return await query_courses(query, ctx)
+async def search_courses_on_cuny(ctx: Context, query: str, college: Literal["leh01"] = "leh01"):
+    return await query_courses(query, college, ctx)
 
 
 @cuny_info_mcp.tool(

@@ -12,7 +12,6 @@ from typing_extensions import Literal
 
 from meaning import shrink_search_response, shrink_get_course_detail
 
-
 def get_otp():
     """
     login url
@@ -30,14 +29,10 @@ def get_otp():
     toptime = otp.now()
     return (email, password, toptime)
 
-
 terms_list = dict()
 term_courses = dict()
 financial_semester = dict()
 degree_information = dict()
-
-
-
 
 async def handle_login_page(page: Page):
     """
@@ -54,7 +49,6 @@ async def handle_login_page(page: Page):
     await page.fill("input[name=password]", password)
     await page.click("button[type=submit]")
 
-
 async def handle_otp_page(page: Page):
     """
     Handles the OTP authentication page by entering the OTP and submitting.
@@ -69,7 +63,6 @@ async def handle_otp_page(page: Page):
     await page.fill("input[placeholder='Enter TOTP']", otp)
     await page.wait_for_selector("button[class=oj-button-button]")
     await page.click("button[class=oj-button-button]")
-
 
 async def handle_criteria_page(page: Page):
     """
@@ -117,7 +110,6 @@ async def handle_criteria_page(page: Page):
         pass
     return {'terms': terms_list, 'courses': term_courses}
 
-
 async def handle_degreeworks_page(page: Page):
     """
     Handles the degreeworks page by extracting degree information.
@@ -140,7 +132,6 @@ async def handle_degreeworks_page(page: Page):
         pass
     return degree_information
 
-
 async def handle_financial_page(page: Page):
     """
     Handles the financial account page by extracting semester costs information.
@@ -161,7 +152,6 @@ async def handle_financial_page(page: Page):
                                     "total_due": total_due}
     print(financial_semester)
     return financial_semester
-
 
 async def handle_other_pages(page: Page):
     """
@@ -253,7 +243,6 @@ async def function(page: Page):
     else:
         await handle_other_pages(page)
 
-
 async def cuny_browser_login(url: str, headless: bool = True):
     """
     Performs automated login to the CUNY browser system using Playwright and navigates through
@@ -308,8 +297,6 @@ async def cuny_browser_login(url: str, headless: bool = True):
         await browser.close()
         return { "terms": terms_list,"courses": term_courses,"tuition": financial_semester, "degree_information": degree_information }
 
-
-
 async def l360(headless: bool = True, typeOfCard: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard"):
     """
     Fetches a user's CUNY ID from the Lehman 360 portal.
@@ -336,10 +323,9 @@ async def l360(headless: bool = True, typeOfCard: Literal["getEmplidCard", "getL
         await handle_otp_page(page)
         return await fetch_cuny_id(page, typeOfCard=typeOfCard)
 
+def get_current_term(college: Literal["leh01"] = "leh01"):
 
-def get_current_term():
-
-    url = "https://app.coursedog.com/api/v1/leh01/general/currentTerm"
+    url = f"https://app.coursedog.com/api/v1/{college}/general/currentTerm"
 
     payload = {}
     headers = {
@@ -421,7 +407,6 @@ def resolve_section_code(year: int, semester: Literal["spring", "summer", "fall"
 
     return section_code
 
-
 def parse_section_code(section_code: str) -> tuple[int, Literal["spring", "summer", "fall"]]:
     """
     This function parses a section code to extract the year and semester.
@@ -478,15 +463,14 @@ def parse_section_code(section_code: str) -> tuple[int, Literal["spring", "summe
 
     return (year, semester)
 
-
-def get_course_detail(id: str, sisId: str, rawCourseId: str, section: str):
+def get_course_detail(id: str, sisId: str, rawCourseId: str, section: str, college: Literal["leh01"] = "leh01"):
     if len(section) != 4:
         raise ValueError("code must be exactly 4 characters long")
 
     if not section.isnumeric():
         raise ValueError("code must be numeric")
 
-    url = f"https://app.coursedog.com/api/v1/ca/leh01/sections/{section}/{sisId}?includeRelatedData=true&courseIds={id},{rawCourseId}"
+    url = f"https://app.coursedog.com/api/v1/ca/{college}/sections/{section}/{sisId}?includeRelatedData=true&courseIds={id},{rawCourseId}"
 
     payload = {}
     headers = {}
@@ -500,9 +484,9 @@ async def get_active_catalog(page: Page):
     activeCatalog = await page.evaluate("this.__NUXT__.state.settings.activeCatalog")
     return activeCatalog
 
-def search(query: str, catalog: str):
+def search(query: str, catalog: str, college: Literal["leh01"] = "leh01"):
 
-    url = f"https://app.coursedog.com/api/v1/cm/leh01/courses/search/{query}?catalogId={catalog}&skip=0&limit=20"
+    url = f"https://app.coursedog.com/api/v1/cm/{college}/courses/search/{query}?catalogId={catalog}&skip=0&limit=20"
 
     payload = json.dumps({
         "condition": "AND",
@@ -571,7 +555,7 @@ async def search_courses(query: str):
         return result
 
 
-async def query_courses(query: str, ctx: Context):
+async def query_courses(query: str, college: Literal["leh01"] = "leh01", ctx: Context = None):
     if ctx:
         await ctx.info("Searching courses")
     results = await search_courses(query=query)
@@ -619,7 +603,12 @@ async def query_courses(query: str, ctx: Context):
         "results": results_dict,
         "current_term": parsed_currentTerm[1] + str(parsed_currentTerm[0]),
         "next_term": parsed_nextTerm[1] + str(parsed_nextTerm[0]),
-        "$hint": "use the fields current_term and next_term to distinguish between the results. It is obvious that current_term refers to the current term and next_term refers to the next term and you may not be able to register for courses in the current term. if there are course materials please display them, you may also check textBook field, credit hours are important to know as well as when the class with start and end also the time and days. if descriptions of the course are present display the description of the course and notes."
+        "$hint": "use the fields current_term and next_term to distinguish between the results. "
+                 "It is obvious that current_term refers to the current term and next_term refers to "
+                 "the next term and you may not be able to register for courses in the current term. "
+                 "if there are course materials please display them, you may also check textBook field, "
+                 "credit hours are important to know as well as when the class with start and end also the time and days. "
+                 "if descriptions of the course are present display the description of the course and notes."
     }
 
 async def main():

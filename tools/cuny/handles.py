@@ -1,9 +1,10 @@
 import asyncio
+import os
 from typing import Literal
 
 from playwright.async_api import Page
 
-from cuny_helper_functions import get_otp
+from env import get_otp
 
 terms_list = dict()
 term_courses = dict()
@@ -178,7 +179,8 @@ async def handle_other_pages(page: Page):
     else:
         print("Page is loaded: url = ", page.url, " title = ", page.title, "")
 
-async def fetch_cuny_id(page: Page, type_of_card: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard") -> bytes:
+async def fetch_cuny_id(page: Page, type_of_card: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard") -> \
+list[bytes]:
     """
     Fetches a screenshot of a specific CUNY ID card type by interacting with a web page. The function waits for a
     specific card type button to appear on the page, clicks it, waits for the content to load, and then captures
@@ -197,16 +199,17 @@ async def fetch_cuny_id(page: Page, type_of_card: Literal["getEmplidCard", "getL
         await page.wait_for_selector("#getEmplidCard")
         await page.click("#getEmplidCard")
         await asyncio.sleep(2)
-        await page.locator("div[id='swal2-content']").screenshot(path=f"getEmplidCard.png")
+        emplid = await page.locator("div[id='swal2-content']").screenshot(path=f"getEmplidCard.png")
         await asyncio.sleep(1)
         await page.click("button.swal2-close")
         await page.wait_for_selector("#getLibraryIdCard")
         await page.click("#getLibraryIdCard")
         await asyncio.sleep(2)
-        return await page.locator("div[id='swal2-content']").screenshot(path=f"getLibraryIdCard.png")
+        library = await page.locator("div[id='swal2-content']").screenshot(path=f"getLibraryIdCard.png")
+        return [emplid, library]
     else:
         await page.wait_for_selector(f"#{type_of_card}")
         await page.click(f"#{type_of_card}")
         await asyncio.sleep(2)
-        return await page.locator("div[id='swal2-content']").screenshot(path=f"{type_of_card}.png")
+        return [ await page.locator("div[id='swal2-content']").screenshot(path=f"{type_of_card}.png") ]
 

@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import sys
@@ -8,10 +9,10 @@ from mcp.server.fastmcp import FastMCP, Context, Image
 from mcp.types import TextContent
 from playwright.async_api import async_playwright
 
-from cuny_core_functions import get_cuny_information, get_cuny_id_card, get_course_details
-from cuny_handles import handle_login_page, handle_otp_page, handle_criteria_page, handle_degreeworks_page, \
+from env import get_otp
+from tools.cuny.core_functions import get_cuny_information, get_cuny_id_card, get_course_details, get_my_cuny_student_id
+from tools.cuny.handles import handle_login_page, handle_otp_page, handle_criteria_page, handle_degreeworks_page, \
     handle_financial_page
-from cuny_helper_functions import get_otp
 from loguru import logger
 
 logger.remove()
@@ -321,7 +322,7 @@ async def fetch_my_cuny_student_id(ctx: Context, type_of_card: Literal["getEmpli
 
     The function communicates with an external system to retrieve the required
     CUNY Student ID. The specific type of card to fetch is controlled by the
-    `typeOfCard` parameter. The function operates asynchronously and will notify
+    `type_of_card` parameter. The function operates asynchronously and will notify
     the user through the context object when the operation begins and completes.
 
     :param ctx: The context object used for providing information updates during
@@ -335,33 +336,7 @@ async def fetch_my_cuny_student_id(ctx: Context, type_of_card: Literal["getEmpli
         and its format.
     :rtype: list[Image]
     """
-    def get_image_path(image_name: str) -> list[Any] | list[Image] | list[TextContent]:
-        if type_of_card == "both":
-            response = []
-            if Path(os.getcwd() + f"/getEmplidCard.png").exists():
-                response.append(Image(path=os.getcwd() + f"/getEmplidCard.png", format='png'))
-            if Path(os.getcwd() + f"/getLibraryIdCard.png").exists():
-                response.append(Image(path=os.getcwd() + f"/getLibraryIdCard.png", format='png'))
-            if len(response) == 0:
-                response.append(
-                    TextContent(type="text", text=f"No card(s) found")
-                )
-            return response
-        elif Path(os.getcwd() + f"/{type_of_card}.png").exists():
-            return [Image(path=os.getcwd() + f"/{type_of_card}.png", format='png')]
-        else:
-            return [TextContent(type="text", text=f"No card(s) found")]
-
-    await ctx.info("Fetching CUNY Student ID")
-    result = get_image_path(type_of_card)
-    if result[0] is not TextContent:
-        return result
-    await ctx.info(
-        "CUNY Student ID not found in cache, fetching CUNY Student ID"
-    )
-    results = await get_cuny_id_card(headless=True, type_of_card=type_of_card)
-    await ctx.info("CUNY Student ID fetched")
-    return get_image_path(type_of_card)
+    return await get_my_cuny_student_id(type_of_card, ctx)
 
 
 @cuny_info_mcp.tool(
@@ -430,3 +405,4 @@ if __name__ == "__main__":
     # Runs MCP server over stdio by default
 
     cuny_info_mcp.run()
+    #asyncio.run(fetch_my_cuny_student_id(ctx=None, type_of_card="both"))

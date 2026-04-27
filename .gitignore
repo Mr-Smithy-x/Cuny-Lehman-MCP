@@ -1,11 +1,11 @@
 .env
 .venv
 .idea
-book_fetcher.py
-fetch_book.py
+books.py
+tools/books/fetch_book.py
 pong_royale.py
-youtube_downloader.py
-record_audio_command.py
+media.py
+voice.py
 *.png
 *.jpg
 *.mp4
@@ -15,3 +15,7 @@ record_audio_command.py
 *.pdf
 __pycache__
 .DS_Store
+powerpoint-mcp
+/tools/media
+/tools/servers
+/tools/books/

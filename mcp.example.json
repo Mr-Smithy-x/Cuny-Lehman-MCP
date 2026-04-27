@@ -10,7 +10,7 @@
     "fetch_cuny_information": {
       "command": "/Users/smithy/PycharmProjects/MCP/.venv/bin/python",
       "args": [
-        "/Users/smithy/PycharmProjects/MCP/fetch_cuny_information.py"
+        "/Users/smithy/PycharmProjects/MCP/cuny.py"
       ],
       "timeout": 120000
     },

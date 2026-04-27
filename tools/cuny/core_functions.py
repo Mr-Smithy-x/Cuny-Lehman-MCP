@@ -1,15 +1,18 @@
 import asyncio
 import json
+import os
 import tracemalloc
+from pathlib import Path
 
-from mcp.server.fastmcp import Context
+from mcp.server.fastmcp import Context, Image
+from mcp.types import TextContent
 from playwright.async_api import async_playwright, Page
-from typing_extensions import Literal
+from typing_extensions import Literal, Any
 
-from cuny_handles import cuny_url_handles, handle_login_page, handle_otp_page, terms_list, term_courses, \
+from tools.cuny.handles import cuny_url_handles, handle_login_page, handle_otp_page, terms_list, term_courses, \
     financial_semester, degree_information, fetch_cuny_id
-from cuny_helper_functions import get_current_term, next_term, parse_section_code, get_course_detail, search_courses
-from cuny_response_reducer import reduce_search_response, reduce_course_detail_response
+from tools.cuny.helper_functions import get_current_term, next_term, parse_section_code, get_course_detail, search_courses
+from tools.cuny.response_reducer import reduce_search_response, reduce_course_detail_response
 
 
 async def lehman360(page: Page):
@@ -73,7 +76,9 @@ async def get_cuny_information(url: str, headless: bool = True):
         await browser.close()
         return { "terms": terms_list,"courses": term_courses,"tuition": financial_semester, "degree_information": degree_information }
 
-async def get_cuny_id_card(headless: bool = True, type_of_card: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard"):
+async def get_cuny_id_card(headless: bool = True,
+                           type_of_card: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard") -> \
+list[bytes]:
     """
     Fetches a user's CUNY ID from the Lehman 360 portal.
 
@@ -151,6 +156,69 @@ async def get_course_details(query: str, college: Literal["leh01"] = "leh01", ct
                  "credit hours are important to know as well as when the class with start and end also the time and days. "
                  "if descriptions of the course are present display the description of the course and notes."
     }
+
+
+async def get_my_cuny_student_id(type_of_card: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard", ctx: Context = None):
+    """
+    Fetches the CUNY Student ID for the user based on the specified type of card.
+
+    The function communicates with an external system to retrieve the required
+    CUNY Student ID. The specific type of card to fetch is controlled by the
+    `type_of_card` parameter. The function operates asynchronously and will notify
+    the user through the context object when the operation begins and completes.
+
+    :param ctx: The context object used for providing information updates during
+        the execution of the function.
+    :type ctx: Context
+    :param type_of_card: The type of card for which the CUNY Student ID should be
+        fetched. Valid options are "getEmplidCard" or "getLibraryIdCard" or "both". Defaults
+        to "getEmplidCard". If set to both, both types of cards will be fetched in one call
+        no need to call the function twice.
+    :return: A list containing an image with the path to the fetched card image
+        and its format.
+    :rtype: list[Image]
+    """
+    def get_image_path(image_name: str) -> list[Any] | list[Image] | list[TextContent]:
+        if type_of_card == "both":
+            response = []
+            if Path(f"getEmplidCard.png").exists():
+                response.append(Image(path=f"getEmplidCard.png", format='png'))
+            if Path(f"getLibraryIdCard.png").exists():
+                response.append(Image(path=f"getLibraryIdCard.png", format='png'))
+            if len(response) == 0:
+                response.append(
+                    TextContent(type="text", text=f"No card(s) found")
+                )
+            return response
+        elif Path(f"{image_name}.png").exists():
+            return [Image(path=f"{image_name}.png", format='png')]
+        else:
+            return [TextContent(type="text", text=f"No card(s) found")]
+
+    if ctx:
+        await ctx.info("Fetching CUNY Student ID")
+    else:
+        print("Fetching CUNY Student ID")
+
+    result = get_image_path(type_of_card)
+
+    if not isinstance(result[0], TextContent):
+        print(result)
+        return result
+
+    if ctx:
+        await ctx.info(
+            "CUNY Student ID not found in cache, fetching CUNY Student ID"
+        )
+    else:
+        print("CUNY Student ID not found in cache, fetching CUNY Student ID")
+
+    results = await get_cuny_id_card(headless=True, type_of_card=type_of_card)
+    if ctx:
+        await ctx.info("CUNY Student ID fetched")
+    else:
+        print("CUNY Student ID fetched")
+    return get_image_path(type_of_card)
 
 async def main():
     tracemalloc.start()

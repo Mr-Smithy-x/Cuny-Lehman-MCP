@@ -11,7 +11,7 @@ loguru
 bs4
 pypdf2
 pygame
-
+python-pptx
 typing-extensions
 python-dotenv
 beautifulsoup4

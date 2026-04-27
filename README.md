@@ -15,7 +15,7 @@ provides detailed reference documentation for every tool available in the three 
 # MCP Tools Reference
 
 Complete documentation for all tools across the following MCP servers:
-- `mcp/fetch-cuny-information`
+- `mcp/cuny`
 - `mcp/system`
 - `mcp/fetch-rendered-html`
 
@@ -26,7 +26,7 @@ Configure your MCP client to connect to the server hosting these tools. Add the 
 ```json
 {
   "mcpServers": {
-    "fetch-cuny-information": {
+    "cuny": {
       "command": "your-cuny-server-executable",
       "args": []
     },

@@ -13,5 +13,5 @@ record_audio_command.py
 *.mkv
 *.webm
 *.pdf
-__pycache_
+__pycache__
 .DS_Store

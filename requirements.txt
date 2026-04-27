@@ -14,3 +14,4 @@ pygame
 
 typing-extensions
 python-dotenv
+beautifulsoup4

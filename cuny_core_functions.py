@@ -1,12 +1,16 @@
 import json
 
+from mcp.server.fastmcp import Context
 from pyotp import TOTP
 from playwright.async_api import async_playwright, Page
 import asyncio
 import dotenv
 import tracemalloc
+import requests
 
 from typing_extensions import Literal
+
+from meaning import shrink_search_response, shrink_get_course_detail
 
 
 def get_otp():
@@ -332,13 +336,303 @@ async def l360(headless: bool = True, typeOfCard: Literal["getEmplidCard", "getL
         await handle_otp_page(page)
         return await fetch_cuny_id(page, typeOfCard=typeOfCard)
 
+
+def get_current_term():
+
+    url = "https://app.coursedog.com/api/v1/leh01/general/currentTerm"
+
+    payload = {}
+    headers = {
+        'Pragma': 'no-cache',
+        'Accept': 'application/json, text/plain, */*',
+        'Sec-Fetch-Site': 'cross-site',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Sec-Fetch-Mode': 'cors',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Origin': 'https://lehman-graduate.catalog.cuny.edu',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Safari/605.1.15',
+        'Referer': 'https://lehman-graduate.catalog.cuny.edu/',
+        'Sec-Fetch-Dest': 'empty',
+        'X-Requested-With': 'catalog',
+        'Priority': 'u=3, i'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    return response.json()
+
+def next_term(term: str = str(get_current_term()['id']), academic_year: bool = False):
+    year = int(term[1:3])
+    if term[-1] == "2":
+        if academic_year:
+            term = term[:-1] + "9"
+        else:
+            term = term[:-1] + "6"
+    elif term[-1] == "6":
+        term = term[:-1] + "9"
+    elif term[-1] == "9":
+        term = term[:-3] + str(year + 1) + "2"
+    else:
+        return "Error: Invalid term"
+    return term
+
+def resolve_section_code(year: int, semester: Literal["spring", "summer", "fall"] = "spring"):
+    """
+    This function resolves the section code based on the provided year and semester.
+    The section code is constructed using the century bit (to distinguish between
+    centuries), the last two digits of the year, and a code representing the semester.
+
+    For example:
+    Given a section code 1262, 1266, 1269 determines what year and semester it is in.
+    - 1262 is the first semester (spring),
+    - 1266 is the second semester (summer),
+    - 1269 is the third semester (summer).
+    How does this work? take the format: (century_bit)[year_abbreviated]<month> to be (1)[26]<2>
+    - (1) - signifies that we are in years of 2000s while (0) signifies we are below 1999 and below
+    - [26] - signifies we are in 2026
+    - <2> - signifies what month the semester starts
+
+    :param year: The four-digit year for which the section code is being resolved.
+    :type year: int
+    :param semester: The semester for which the section code is being resolved.
+        Must be one of "spring", "summer", or "fall". Defaults to "spring".
+    :type semester: Literal["spring", "summer", "fall"]
+    :return: The resolved section code as an integer, composed of the century bit,
+        the last two digits of the year, and the month code for the semester.
+    :rtype: int
+    """
+    # Determine century bit: 1 for 2000+, 0 for 1999 and below
+    century_bit = 1 if year >= 2000 else 0
+
+    # Extract two-digit year abbreviation
+    year_abbreviated = year % 100
+
+    # Map semester to month code
+    semester_month_map = {
+        "spring": 2,
+        "summer": 6,
+        "fall": 9
+    }
+
+    month_code = semester_month_map[semester]
+
+    # Combine to form section code: century_bit + year_abbreviated + month_code
+    section_code = int(f"{century_bit}{year_abbreviated}{month_code}")
+
+    return section_code
+
+
+def parse_section_code(section_code: str) -> tuple[int, Literal["spring", "summer", "fall"]]:
+    """
+    This function parses a section code to extract the year and semester.
+    The section code is composed of a century bit, two-digit year abbreviation,
+    and a month code representing the semester.
+
+    For example:
+    Given a section code 1262, 1266, 1269:
+    - 1262 represents spring 2026
+    - 1266 represents summer 2026
+    - 1269 represents fall 2026
+
+    The format is: (century_bit)[year_abbreviated]<month>
+    - (1) - signifies years 2000 and above; (0) signifies 1999 and below
+    - [26] - signifies year 2026
+    - <2> - signifies the semester (2=spring, 6=summer, 9=fall)
+
+    :param section_code: The section code to parse, composed of century bit,
+        year abbreviation, and month code.
+    :type section_code: int
+    :return: A tuple containing the four-digit year and the semester name.
+    :rtype: tuple[int, Literal["spring", "summer", "fall"]]
+    :raises ValueError: If the section code format is invalid or month code is unrecognized.
+    """
+    # Convert to string for easier parsing
+    code_str = str(section_code)
+
+    if len(code_str) != 4:
+        raise ValueError(f"Invalid section code format: {section_code}. Expected 4 digits.")
+
+    # Extract components
+    century_bit = int(code_str[0])
+    year_abbreviated = int(code_str[1:3])
+    month_code = int(code_str[3])
+
+    # Determine full year based on century bit
+    if century_bit == 1:
+        year = 2000 + year_abbreviated
+    elif century_bit == 0:
+        year = 1900 + year_abbreviated
+    else:
+        raise ValueError(f"Invalid century bit: {century_bit}. Expected 0 or 1.")
+
+    # Map month code to semester
+    month_semester_map = {
+        2: "spring",
+        6: "summer",
+        9: "fall"
+    }
+
+    semester = month_semester_map.get(month_code)
+    if semester is None:
+        raise ValueError(f"Invalid month code: {month_code}. Expected 2, 6, or 9.")
+
+    return (year, semester)
+
+
+def get_course_detail(id: str, sisId: str, rawCourseId: str, section: str):
+    if len(section) != 4:
+        raise ValueError("code must be exactly 4 characters long")
+
+    if not section.isnumeric():
+        raise ValueError("code must be numeric")
+
+    url = f"https://app.coursedog.com/api/v1/ca/leh01/sections/{section}/{sisId}?includeRelatedData=true&courseIds={id},{rawCourseId}"
+
+    payload = {}
+    headers = {}
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    return response.json()
+
+async def get_active_catalog(page: Page):
+    await page.goto("https://lehman-graduate.catalog.cuny.edu/courses", wait_until="domcontentloaded")
+    activeCatalog = await page.evaluate("this.__NUXT__.state.settings.activeCatalog")
+    return activeCatalog
+
+def search(query: str, catalog: str):
+
+    url = f"https://app.coursedog.com/api/v1/cm/leh01/courses/search/{query}?catalogId={catalog}&skip=0&limit=20"
+
+    payload = json.dumps({
+        "condition": "AND",
+        "filters": [
+            {
+                "condition": "and",
+                "filters": [
+                    {
+                        "id": "status-course",
+                        "name": "status",
+                        "inputType": "select",
+                        "group": "course",
+                        "type": "is",
+                        "value": "Active"
+                    },
+                    {
+                        "id": "catalogPrint-course",
+                        "name": "catalogPrint",
+                        "inputType": "boolean",
+                        "group": "course",
+                        "type": "is",
+                        "value": True
+                    },
+                    {
+                        "id": "career-course",
+                        "name": "career",
+                        "inputType": "careerSelect",
+                        "group": "course",
+                        "type": "isNot",
+                        "value": "Undergraduate"
+                    }
+                ]
+            }
+        ]
+    })
+    headers = {
+        'Content-Type': 'application/json',
+        'Pragma': 'no-cache',
+        'Accept': 'application/json, text/plain, */*',
+        'Sec-Fetch-Site': 'cross-site',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Sec-Fetch-Mode': 'cors',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Origin': 'https://lehman-graduate.catalog.cuny.edu',
+        'Content-Length': '406',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Safari/605.1.15',
+        'Referer': 'https://lehman-graduate.catalog.cuny.edu/',
+        'Sec-Fetch-Dest': 'empty',
+        'X-Requested-With': 'catalog',
+        'Priority': 'u=3, i'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+    return response.json()
+
+async def search_courses(query: str):
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        catalog = await get_active_catalog(page)
+        result = search(query, catalog)
+        return result
+
+
+async def query_courses(query: str, ctx: Context):
+    if ctx:
+        await ctx.info("Searching courses")
+    results = await search_courses(query=query)
+    if ctx:
+        await ctx.info(f"Found {len(results)} courses for query '{query}'")
+    shrunk = shrink_search_response(results)
+    if ctx:
+        await ctx.info(f"Shrunk search response to {len(shrunk)} courses")
+    results_dict = dict()
+
+    currentTerm = get_current_term()['id']
+    if ctx:
+        await ctx.info(f"Current term: {currentTerm}")
+
+    nextTerm = next_term(term=str(currentTerm), academic_year=True)
+    if ctx:
+        await ctx.info(f"Next term: {nextTerm}")
+    parsed_currentTerm = parse_section_code(currentTerm)
+    if ctx:
+        await ctx.info(f"Parsed current term: {parsed_currentTerm}")
+    parsed_nextTerm = parse_section_code(nextTerm)
+    if ctx:
+        await ctx.info(f"Parsed next term: {parsed_nextTerm}")
+
+    for course in shrunk:
+        if ctx:
+            await ctx.info(f"Processing course: {course['name']}")
+        currentTermResults = get_course_detail(course['id'], course['sisId'], course['rawCourseId'], currentTerm)
+        if ctx:
+            await ctx.info(f"Got course detail for {course['name']}")
+        nextTermResults = get_course_detail(course['id'], course['sisId'], course['rawCourseId'], nextTerm)
+        if ctx:
+            await ctx.info(f"Got course detail for {course['name']} in next term")
+        results_dict[course['name']] = {
+            f"{parsed_currentTerm[1] + str(parsed_currentTerm[0])}": shrink_get_course_detail(currentTermResults),
+            f"{parsed_nextTerm[1] + str(parsed_nextTerm[0])}": shrink_get_course_detail(nextTermResults),
+        }
+
+    if ctx:
+        await ctx.info(f"Completed processing {len(shrunk)} courses")
+    return {
+        "status": "success",
+        "query": query,
+        "results": results_dict,
+        "current_term": parsed_currentTerm[1] + str(parsed_currentTerm[0]),
+        "next_term": parsed_nextTerm[1] + str(parsed_nextTerm[0]),
+        "$hint": "use the fields current_term and next_term to distinguish between the results. It is obvious that current_term refers to the current term and next_term refers to the next term and you may not be able to register for courses in the current term. if there are course materials please display them, you may also check textBook field, credit hours are important to know as well as when the class with start and end also the time and days"
+    }
+
 async def main():
     tracemalloc.start()
     login_url = "http://cunyfirst.cuny.edu/"
     #await login(login_url, wait_for_selector="input[name=usernameDisplay]")
     #results = await cuny_browser_login(login_url, headless=False)
     #results = await l360(headless=False, typeOfCard="both")
-    #print(json.dumps(results))
+    print(next_term(term="1269",academic_year=False))
+    #results_dict = await query_courses("Artificial Intelligence")
+    results_dict = await query_courses("CMP 765", None)
+
+        #print(json.dumps(result, indent=4))
+    print(json.dumps(results_dict, indent=4))
 
     #print(f"Current OTP: {otp}")
 

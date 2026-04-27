@@ -3,11 +3,9 @@ import os
 import tracemalloc
 from pathlib import Path
 from typing import Literal, Any
-
 from mcp.server.fastmcp import FastMCP, Context, Image
 from mcp.types import TextContent
-
-from cuny_core_functions import cuny_browser_login, l360
+from cuny_core_functions import cuny_browser_login, l360, query_courses
 
 cuny_info_mcp = FastMCP("cuny-info-fetcher")
 
@@ -105,6 +103,66 @@ async def fetch_cuny_studentid(ctx: Context, typeOfCard: Literal["getEmplidCard"
     results = await l360(headless=True, typeOfCard=typeOfCard)
     await ctx.info("CUNY Student ID fetched")
     return get_image_path(typeOfCard)
+
+
+@cuny_info_mcp.tool(
+    description="This function is used to search for courses on CUNY. It takes a query string as input and returns a dictionary containing the search results. DO NOT ASSUME A COURSE NUMBER IF A COURSE NUMBER IF a-zA-Z text is being used",
+    title="Search Courses on CUNY",
+    name="search_courses_on_cuny"
+)
+async def search_courses_on_cuny(ctx: Context, query: str):
+    return await query_courses(query, ctx)
+
+
+@cuny_info_mcp.tool(
+    description="This function resolves the section code based on the provided year and semester.",
+    title="Resolve Section Code",
+    name="resolve_section_code"
+)
+async def resolve_section_code(year: int, semester: Literal["spring", "summer", "fall"] = "spring"):
+    """
+    This function resolves the section code based on the provided year and semester.
+    The section code is constructed using the century bit (to distinguish between
+    centuries), the last two digits of the year, and a code representing the semester.
+
+    For example:
+    Given a section code 1262, 1266, 1269 determines what year and semester it is in.
+    - 1262 is the first semester (spring),
+    - 1266 is the second semester (summer),
+    - 1269 is the third semester (summer).
+    How does this work? take the format: (century_bit)[year_abbreviated]<month> to be (1)[26]<2>
+    - (1) - signifies that we are in years of 2000s while (0) signifies we are below 1999 and below
+    - [26] - signifies we are in 2026
+    - <2> - signifies what month the semester starts
+
+    :param year: The four-digit year for which the section code is being resolved.
+    :type year: int
+    :param semester: The semester for which the section code is being resolved.
+        Must be one of "spring", "summer", or "fall". Defaults to "spring".
+    :type semester: Literal["spring", "summer", "fall"]
+    :return: The resolved section code as an integer, composed of the century bit,
+        the last two digits of the year, and the month code for the semester.
+    :rtype: int
+    """
+    # Determine century bit: 1 for 2000+, 0 for 1999 and below
+    century_bit = 1 if year >= 2000 else 0
+
+    # Extract two-digit year abbreviation
+    year_abbreviated = year % 100
+
+    # Map semester to month code
+    semester_month_map = {
+        "spring": 2,
+        "summer": 6,
+        "fall": 9
+    }
+
+    month_code = semester_month_map[semester]
+
+    # Combine to form section code: century_bit + year_abbreviated + month_code
+    section_code = int(f"{century_bit}{year_abbreviated}{month_code}")
+
+    return section_code
 
 
 if __name__ == "__main__":

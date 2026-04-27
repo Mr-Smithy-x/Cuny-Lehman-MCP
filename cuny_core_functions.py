@@ -9,7 +9,7 @@ from typing_extensions import Literal
 from cuny_handles import cuny_url_handles, handle_login_page, handle_otp_page, terms_list, term_courses, \
     financial_semester, degree_information, fetch_cuny_id
 from cuny_helper_functions import get_current_term, next_term, parse_section_code, get_course_detail, search_courses
-from meaning import shrink_search_response, shrink_get_course_detail
+from cuny_response_reducer import reduce_search_response, reduce_course_detail_response
 
 
 async def lehman360(page: Page):
@@ -102,7 +102,7 @@ async def get_course_details(query: str, college: Literal["leh01"] = "leh01", ct
     results = await search_courses(query=query, college=college)
     if ctx:
         await ctx.info(f"Found {len(results)} courses for query '{query}'")
-    shrunk = shrink_search_response(results)
+    shrunk = reduce_search_response(results)
     if ctx:
         await ctx.info(f"Shrunk search response to {len(shrunk)} courses")
     results_dict = dict()
@@ -131,8 +131,8 @@ async def get_course_details(query: str, college: Literal["leh01"] = "leh01", ct
         if ctx:
             await ctx.info(f"Got course detail for {course['name']} in next term")
         results_dict[course['name']] = {
-            f"{parsed_currentTerm[1] + str(parsed_currentTerm[0])}": shrink_get_course_detail(currentTermResults),
-            f"{parsed_nextTerm[1] + str(parsed_nextTerm[0])}": shrink_get_course_detail(nextTermResults),
+            f"{parsed_currentTerm[1] + str(parsed_currentTerm[0])}": reduce_course_detail_response(currentTermResults),
+            f"{parsed_nextTerm[1] + str(parsed_nextTerm[0])}": reduce_course_detail_response(nextTermResults),
         }
     results['searches'] = shrunk
 

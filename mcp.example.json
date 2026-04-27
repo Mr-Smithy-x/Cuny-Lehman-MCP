@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "fetch_rendered_html": {
+      "command": "/Users/smithy/PycharmProjects/MCP/.venv/bin/python",
+      "args": [
+        "/Users/smithy/PycharmProjects/MCP/fetch_rendered_html.py"
+      ],
+      "timeout": 120000
+    },
+    "fetch_cuny_information": {
+      "command": "/Users/smithy/PycharmProjects/MCP/.venv/bin/python",
+      "args": [
+        "/Users/smithy/PycharmProjects/MCP/fetch_cuny_information.py"
+      ],
+      "timeout": 120000
+    },
+    "system": {
+      "command": "/Users/smithy/PycharmProjects/MCP/.venv/bin/python",
+      "args": [
+        "/Users/smithy/PycharmProjects/MCP/system.py"
+      ],
+      "timeout": 120000
+    }
+  }
+}

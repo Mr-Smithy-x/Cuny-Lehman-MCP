@@ -1,5 +1,5 @@
 
-def shrink_get_course_detail(content: dict):
+def reduce_course_detail_response(content: dict):
     if "sections" in content:
         sections = content['sections']
     else:
@@ -59,7 +59,7 @@ def shrink_get_course_detail(content: dict):
     }
 
 
-def shrink_search_response(course_info: dict):
+def reduce_search_response(course_info: dict):
     courses = []
     for data in course_info['data']:
         result = {

@@ -17,6 +17,7 @@ provides detailed reference documentation for every tool available in the three 
 Complete documentation for all tools across the following MCP servers:
 - `mcp/cuny`
 - `mcp/system`
+- `mcp/powerpoint`
 - `mcp/fetch-rendered-html`
 
 
@@ -350,6 +351,89 @@ Fetches the fully rendered HTML content of a webpage, executing client-side Java
   }
 }
 ```
+
+# MCP PowerPoint Automation Tools Reference
+
+A comprehensive guide to the available MCP tools for programmatic PowerPoint creation, layout management, and deck manipulation.
+
+---
+
+## 🏗️ Presentation Foundation
+
+| Tool | Purpose | Key Parameters |
+|------|---------|----------------|
+| `create_presentation` | Initializes a new `.pptx` file with a professionally styled title slide. | `file_path`, `title`, `subtitle?`, `theme` |
+| `list_themes` | Returns available color themes with brief descriptions for consistent styling. | *(none)* |
+
+---
+
+## 📐 Layout & Content Slides
+
+All slide-adding tools require a `file_path` and `title`. They automatically apply the chosen `theme` and handle font auto-scaling to prevent overflow.
+
+| Tool | Purpose | Key Parameters |
+|------|---------|----------------|
+| `add_bullet_slide` | Clean bullet-point layout. Ideal for lists, steps, or key takeaways. | `points` (array of strings) |
+| `add_prose_slide` | Flowing narrative text without bullets. Best for executive summaries or context. | `narrative_text` (string) |
+| `add_two_column_slide` | Split-layout slide for comparisons, pros/cons, or before/after analysis. | `left_heading`, `left_points`, `right_heading`, `right_points` |
+| `add_stat_callout_slide` | High-impact metric/KPI slide with large bold callouts. Max 4 stats. | `stats` (array of `{"value": "...", "label": "..."}`) |
+| `add_chart_slide` | Styled clustered column chart. | `categories` (array of strings), `values` (array of numbers) |
+| `add_table_slide` | Formatted table with a colored header row and white text. | `rows`, `cols`, `data` (2D array of strings) |
+| `add_image_slide` | Slide with a centered image and title. | `image_path` (string) |
+| `add_quote_slide` | Dark-background slide with large italic quote text. | `quote`, `attribution?` |
+| `add_agenda_slide` | Numbered table of contents with circular badge styling. | `items` (array of strings) |
+| `add_section_title_slide` | Section divider slide (dark bg, centered text). Use between major topics. | `section_title`, `section_number?` |
+
+---
+
+## 🛠️ Deck Management & Manipulation
+
+| Tool | Purpose | Key Parameters |
+|------|---------|----------------|
+| `inspect_deck` | Returns structural summary: slide count, shape types, and content overview. | `file_path` |
+| `read_slide_details` | Grabs every shape on a specific slide (index, type, text content). | `file_path`, `slide_idx` |
+| `update_shape_text` | Replaces text in an existing shape by index (useful for dynamic updates). | `file_path`, `slide_idx`, `shape_idx`, `new_text` |
+| `delete_slide` | Removes a slide permanently by index. | `file_path`, `slide_idx` |
+| `clear_slide` | Wipes all shapes from a slide but preserves the slide container. | `file_path`, `slide_idx` |
+
+---
+
+## 🎨 Theming & Export
+
+| Tool | Purpose | Key Parameters |
+|------|---------|----------------|
+| `export_preview_image` | Exports a single slide to PNG via PowerPoint COM automation. | `file_path`, `slide_idx`, `output_png` |
+| `list_themes` | *(See Foundation)* Returns available themes: `midnight`, `forest`, `coral`, `charcoal`, `teal`. |
+
+---
+
+## 💡 Implementation Notes
+
+- **`file_path`**: All tools expect a relative path to the server root. Use `.pptx` extension for output files.
+- **`theme`**: Available options are `midnight`, `forest`, `coral`, `charcoal`, and `teal`. Consistent theming is automatically applied across all added slides.
+- **Auto-Scaling**: Bullet, prose, two-column, and stat callout slides automatically adjust font sizes to prevent text overflow.
+- **Windows Dependency**: `export_preview_image` relies on PowerPoint COM automation and **only works on Windows environments**.
+- **Data Formatting**: 
+  - `add_chart_slide` expects parallel arrays for `categories` and `values`.
+  - `add_stat_callout_slide` requires `[{ "value": "94%", "label": "Satisfaction" }, ...]`.
+  - `add_table_slide` requires a flat list of strings matching `rows × cols`.
+
+---
+
+## 🚀 Quick Workflow Example
+```python
+# 1. Create
+create_presentation(file_path="reports/quarterly_review.pptx", title="Q3 Performance", theme="midnight")
+
+# 2. Add Content
+add_agenda_slide(file_path="reports/quarterly_review.pptx", items=["Revenue", "Churn", "Expansion"])
+add_stat_callout_slide(file_path="reports/quarterly_review.pptx", title="Key Metrics", stats=[{"value": "$2.4M", "label": "ARR"}, {"value": "94%", "label": "Retention"}])
+
+# 3. Export (Windows only)
+export_preview_image(file_path="reports/quarterly_review.pptx", slide_idx=0, output_png="preview_slide0.png")
+```
+
+Let me know if you need a specific deck generated or a tool explained in more depth!
 
 ---
 

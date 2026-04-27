@@ -609,6 +609,7 @@ async def query_courses(query: str, ctx: Context):
             f"{parsed_currentTerm[1] + str(parsed_currentTerm[0])}": shrink_get_course_detail(currentTermResults),
             f"{parsed_nextTerm[1] + str(parsed_nextTerm[0])}": shrink_get_course_detail(nextTermResults),
         }
+    results['searches'] = shrunk
 
     if ctx:
         await ctx.info(f"Completed processing {len(shrunk)} courses")
@@ -618,7 +619,7 @@ async def query_courses(query: str, ctx: Context):
         "results": results_dict,
         "current_term": parsed_currentTerm[1] + str(parsed_currentTerm[0]),
         "next_term": parsed_nextTerm[1] + str(parsed_nextTerm[0]),
-        "$hint": "use the fields current_term and next_term to distinguish between the results. It is obvious that current_term refers to the current term and next_term refers to the next term and you may not be able to register for courses in the current term. if there are course materials please display them, you may also check textBook field, credit hours are important to know as well as when the class with start and end also the time and days"
+        "$hint": "use the fields current_term and next_term to distinguish between the results. It is obvious that current_term refers to the current term and next_term refers to the next term and you may not be able to register for courses in the current term. if there are course materials please display them, you may also check textBook field, credit hours are important to know as well as when the class with start and end also the time and days. if descriptions of the course are present display the description of the course and notes."
     }
 
 async def main():

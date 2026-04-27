@@ -27,17 +27,33 @@ Configure your MCP client to connect to the server hosting these tools. Add the 
 ```json
 {
   "mcpServers": {
+    "fetch_rendered_html": {
+      "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
+      "args": [
+        "<path>/Cuny_Lehman_MCP/fetch_rendered_html.py"
+      ],
+      "timeout": 120000
+    },
     "cuny": {
-      "command": "your-cuny-server-executable",
-      "args": []
+      "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
+      "args": [
+        "<path>/Cuny_Lehman_MCP/cuny.py"
+      ],
+      "timeout": 120000
+    },
+    "powerpoint": {
+      "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
+      "args": [
+        "<path>/Cuny_Lehman_MCP/powerpoint.py"
+      ],
+      "timeout": 120000
     },
     "system": {
-      "command": "your-system-server-executable",
-      "args": []
-    },
-    "fetch-rendered-html": {
-      "command": "your-web-fetch-server-executable",
-      "args": []
+      "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
+      "args": [
+        "<path>/Cuny_Lehman_MCP/system.py"
+      ],
+      "timeout": 120000
     }
   }
 }

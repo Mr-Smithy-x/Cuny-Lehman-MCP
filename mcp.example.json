@@ -7,10 +7,17 @@
       ],
       "timeout": 120000
     },
-    "fetch_cuny_information": {
+    "cuny": {
       "command": "/Users/smithy/PycharmProjects/MCP/.venv/bin/python",
       "args": [
         "/Users/smithy/PycharmProjects/MCP/cuny.py"
+      ],
+      "timeout": 120000
+    },
+    "powerpoint": {
+      "command": "/Users/smithy/PycharmProjects/MCP/.venv/bin/python",
+      "args": [
+        "/Users/smithy/PycharmProjects/MCP/powerpoint.py"
       ],
       "timeout": 120000
     },

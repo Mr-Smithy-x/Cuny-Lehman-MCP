@@ -5,7 +5,7 @@ import json
 from mcp import ClientSession, StdioServerParameters, stdio_client
 
 MCP_TOOL_NAME = "fetch_cuny_information"
-MCP_SERVER_CMD_FILE = ["fetch_all_cuny_information.py"]  # Path to your MCP server
+MCP_SERVER_CMD_FILE = ["fetch_cuny_information.py"]  # Path to your MCP server
 LM_STUDIO_URL = "http://192.168.1.216:1234/v1/chat/completions"
 MODEL_NAME = "qwen/qwen3.6-35b-a3b"  # e.g., "llama-3.2-3b-instruct"
 

@@ -17,8 +17,12 @@ from loguru import logger
 logger.remove()
 logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
 
+# ── Server instantiation ──────────────────────────────────────────────────────
+
 cuny_info_mcp = FastMCP("cuny-info-fetcher")
 
+
+# ── Tools ─────────────────────────────────────────────────────────────────────
 @cuny_info_mcp.tool(
     description="This is a server to fetch all cuny information such as financial tuition and cost, degree information and courses taking and current courses in progress. This function is an all in one function that should be used over the single functions as the single function takes too much time to fetch the information however this function is much quicker because it does everything all at once.",
     title="Fetch All Cuny Information",
@@ -77,8 +81,8 @@ async def fetch_my_cuny_courses(
 
     This function utilizes Playwright for browser automation and performs tasks such as
     login, OTP entry, navigation to the course details section, and extraction of rendered
-    HTML content. The resulting information, including the status, URL, and extracted
-    HTML data, is returned as a dictionary.
+    JSON content. The resulting information, including the status, URL, and extracted
+    JSON data, is returned as a dictionary.
 
     :param ctx: The asynchronous context object used for logging and other utility methods.
     :type ctx: Context
@@ -86,7 +90,7 @@ async def fetch_my_cuny_courses(
         element rendering, or dynamic content to load. Defaults to 30000 milliseconds.
     :type timeout: int
     :return: A dictionary containing the result of the operation. On success, it includes the
-        status as "success," the source URL, and rendered HTML information such as length and
+        status as "success," the source URL, and rendered JSON information such as length and
         content. On error, it returns the status as "error," the source URL, and the error message.
     :rtype: dict
     """
@@ -166,7 +170,7 @@ async def fetch_my_cuny_degree_progress(
     information, by interacting with the web interface dynamically using Playwright.
 
     This function automates the login process, handles multi-factor authentication (MFA),
-    navigates to the student's dashboard, and extracts the rendered HTML content to
+    navigates to the student's dashboard, and extracts the rendered JSON content to
     provide the requested academic details.
 
     :param ctx: The application context, used for logging information during execution.
@@ -178,8 +182,8 @@ async def fetch_my_cuny_degree_progress(
     :return: A dictionary containing the following keys:
              - "status": A string indicating the outcome ("success" or "error").
              - "url": The URL used for the operation.
-             - "html_length": The length of the extracted HTML content if successful.
-             - "html": The extracted HTML content if successful.
+             - "json_length": The length of the extracted JSON content if successful.
+             - "json": The extracted JSON content if successful.
              - "error": A string description of the error, only present if the operation
                fails.
              Type: dict
@@ -236,7 +240,7 @@ async def fetch_my_cuny_financial_cost(
 ) -> dict:
     """
     Fetch the financial cost of CUNY courses per semester by navigating CUNYFirst's
-    student center and retrieving rendered HTML content after logging in.
+    student center and retrieving rendered JSON content after logging in.
 
     This asynchronous function uses Playwright to automate browser interactions,
     handles login with email, password, and OTP (one-time password), and extracts
@@ -248,7 +252,7 @@ async def fetch_my_cuny_financial_cost(
         such as loading pages or waiting for selectors.
     :type timeout: int
     :return: Dictionary containing the status of the fetch operation,
-        the URL accessed, and either the rendered HTML or an error message.
+        the URL accessed, and either the rendered JSON or an error message.
     :rtype: dict
     """
     tracemalloc.start()
@@ -420,6 +424,9 @@ async def resolve_section_code(year: int, semester: Literal["spring", "summer", 
     return section_code
 
 
+
+# ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     # Runs MCP server over stdio by default
+
     cuny_info_mcp.run()

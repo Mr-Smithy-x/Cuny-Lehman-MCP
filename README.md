@@ -195,6 +195,17 @@ Resolves the section code based on the provided year and semester.
 }
 ```
 
+## API Endpoints
+
+This tool interacts with CUNY's internal systems (e.g., CUNYFirst). Ensure you have proper authentication credentials configured in your environment.
+
+## Security & Privacy
+
+- **Data Sensitivity:** The data retrieved includes PII and financial information. Handle this data with care.
+- **Authentication:** Ensure that your API keys or session tokens are stored securely and not exposed in code.
+- **Rate Limiting:** Be mindful of CUNY's rate limits to avoid being blocked.
+
+
 ---
 
 ## ⚙️ `mcp/system` Server Tools
@@ -367,18 +378,6 @@ Fetches the fully rendered HTML content of a webpage, executing client-side Java
   }
 }
 ```
-
-
-## API Endpoints
-
-This tool interacts with CUNY's internal systems (e.g., CUNYFirst). Ensure you have proper authentication credentials configured in your environment.
-
-## Security & Privacy
-
-- **Data Sensitivity:** The data retrieved includes PII and financial information. Handle this data with care.
-- **Authentication:** Ensure that your API keys or session tokens are stored securely and not exposed in code.
-- **Rate Limiting:** Be mindful of CUNY's rate limits to avoid being blocked.
-
 
 ## MCP PowerPoint Automation Tools Reference
 

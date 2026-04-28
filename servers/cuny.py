@@ -17,11 +17,11 @@ logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
 
 # ── Server instantiation ──────────────────────────────────────────────────────
 
-cuny_info_mcp = FastMCP("cuny-info-fetcher")
+mcp = FastMCP("cuny-info-fetcher")
 
 
 # ── Tools ─────────────────────────────────────────────────────────────────────
-@cuny_info_mcp.tool(
+@mcp.tool(
     description="This is a server to fetch all cuny information such as financial tuition and cost, degree information and courses taking and current courses in progress. This function is an all in one function that should be used over the single functions as the single function takes too much time to fetch the information however this function is much quicker because it does everything all at once.",
     title="Fetch All Cuny Information",
     name="fetch_my_cuny_information"
@@ -63,7 +63,7 @@ async def fetch_my_cuny_information(
 
 
 
-@cuny_info_mcp.tool(
+@mcp.tool(
     description="A server that retrieves CUNY course schedules and details listed on your profile. Can be used to check times and dates of classes.",
     title="Fetch Cuny Courses",
     name="fetch_my_cuny_courses"
@@ -152,7 +152,7 @@ async def fetch_my_cuny_courses(
 
 
 
-@cuny_info_mcp.tool(
+@mcp.tool(
     description="A server that retrieves CUNY degree progress. It contains transcript, grades, and other academic information.",
     title="Fetch Cuny Degree Progress",
     name="fetch_my_cuny_degree_progress"
@@ -224,7 +224,7 @@ async def fetch_my_cuny_degree_progress(
             await browser.close()
 
 
-@cuny_info_mcp.tool(
+@mcp.tool(
     description="A server that retrieves the cost of CUNY course per semester. it checks how much money you will pay for each semester, or how much money you owe.",
     title="Fetch Cuny Financial Cost",
     name="fetch_my_cuny_financial_cost"
@@ -304,7 +304,7 @@ async def fetch_my_cuny_financial_cost(
             await browser.close()
 
 
-@cuny_info_mcp.tool(
+@mcp.tool(
     description="This function is used to fetch the cuny student ID of the user.",
     title="Fetch All Cuny Student ID",
     name="fetch_my_cuny_student_id"
@@ -332,7 +332,7 @@ async def fetch_my_cuny_student_id(ctx: Context, type_of_card: Literal["getEmpli
     return await get_my_cuny_student_id(type_of_card, ctx)
 
 
-@cuny_info_mcp.tool(
+@mcp.tool(
     description="This function is used to search for courses on CUNY. It takes a query string as input and returns a dictionary containing the search results. DO NOT ASSUME A COURSE NUMBER IF A COURSE NUMBER IF a-zA-Z text is being used",
     title="Search Courses on CUNY",
     name="search_courses_on_cuny"
@@ -341,7 +341,7 @@ async def search_courses_on_cuny(ctx: Context, query: str, college: Literal["leh
     return await get_course_details(query, college, ctx)
 
 
-@cuny_info_mcp.tool(
+@mcp.tool(
     description="This function resolves the section code based on the provided year and semester.",
     title="Resolve Section Code",
     name="resolve_section_code"
@@ -397,5 +397,5 @@ async def resolve_section_code(year: int, semester: Literal["spring", "summer", 
 if __name__ == "__main__":
     # Runs MCP server over stdio by default
 
-    cuny_info_mcp.run(transport='stdio')
+    mcp.run(transport='stdio')
     #asyncio.run(fetch_my_cuny_student_id(ctx=None, type_of_card="both"))

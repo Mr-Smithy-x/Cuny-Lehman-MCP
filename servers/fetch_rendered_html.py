@@ -2,10 +2,10 @@ from mcp.server.fastmcp import FastMCP
 from playwright.async_api import async_playwright
 
 # Initialize MCP server
-html_mcp = FastMCP("rendered-html-fetcher")
+mcp = FastMCP("rendered-html-fetcher")
 
 
-@html_mcp.tool(
+@mcp.tool(
     title="Fetch Rendered HTML",
     description="A server that fetches html content of a webpage",
     name="fetch_rendered_html"
@@ -71,4 +71,4 @@ async def fetch_rendered_html(
 
 if __name__ == "__main__":
     # Runs MCP server over stdio by default
-    html_mcp.run()
+    mcp.run()

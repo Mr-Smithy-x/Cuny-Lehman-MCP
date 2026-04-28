@@ -11,7 +11,7 @@ from mcp.types import TextContent
 from pydantic import Field
 
 # ── Server instantiation ──────────────────────────────────────────────────────
-system_mcp = FastMCP(
+mcp = FastMCP(
     name="filesystem",
     instructions=(
         "A filesystem server. All paths must be absolute and must remain within "
@@ -23,7 +23,7 @@ system_mcp = FastMCP(
 logger.remove()
 logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
 
-@system_mcp.tool(
+@mcp.tool(
     title="Open file",
     description="Open a file, if the file contains a path starting with \\Users then we know that its on the active users directory otherwise it will check the mcp root directory.",
     name="open_file"
@@ -62,7 +62,7 @@ def safe_path(raw: str) -> Path:
 
 
 # ── Resources ─────────────────────────────────────────────────────────────────
-@system_mcp.resource(
+@mcp.resource(
     uri="filesystem://root",
     name="Root directory",
     description="The absolute path of the allowed filesystem root.",
@@ -73,7 +73,7 @@ def root_resource() -> str:
     return str(ROOT)
 
 # ── Tools ─────────────────────────────────────────────────────────────────────
-@system_mcp.tool(
+@mcp.tool(
     name="read_file",
     description=(
         "Read the full text content of a file. "
@@ -100,7 +100,7 @@ def read_file(
     return p.read_text(encoding="utf-8")
 
 
-@system_mcp.tool(
+@mcp.tool(
     name="write_file",
     description=(
         "Write (or overwrite) a file with the given text content. "
@@ -132,7 +132,7 @@ def write_file(
     return f"Wrote {len(content)} characters to '{path}'."
 
 
-@system_mcp.tool(
+@mcp.tool(
     name="list_directory",
     description=(
         "List the contents of a directory. "
@@ -162,7 +162,7 @@ def list_directory(
     return "\n".join(lines) if lines else "(empty directory)"
 
 
-@system_mcp.tool(
+@mcp.tool(
     name="delete_file",
     description="Permanently delete a single file. Does NOT delete directories.",
 )
@@ -182,7 +182,7 @@ def delete_file(
     return f"Deleted '{path}'."
 
 
-@system_mcp.tool(
+@mcp.tool(
     name="delete_directory",
     description=(
         "Delete a directory and all its contents recursively. "
@@ -220,7 +220,7 @@ def delete_directory(
     return f"Deleted directory '{path}' and all its contents."
 
 
-@system_mcp.tool(
+@mcp.tool(
     name="move",
     description="Move or rename a file or directory.",
 )
@@ -244,7 +244,7 @@ def move(
     return f"Moved '{source}' → '{destination}'."
 
 
-@system_mcp.tool(
+@mcp.tool(
     name="file_info",
     description=(
         "Return metadata about a file or directory: "
@@ -271,7 +271,7 @@ def file_info(
 
 
 # ── Prompts ───────────────────────────────────────────────────────────────────
-@system_mcp.prompt(
+@mcp.prompt(
     name="summarise_file",
     description="Generate a prompt that asks the LLM to summarise a file's contents.",
 )
@@ -291,5 +291,5 @@ def summarise_file(
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    system_mcp.run()           # defaults to stdio transport
+    mcp.run()           # defaults to stdio transport
     # For SSE (HTTP) transport:  mcp.run(transport="sse", host="0.0.0.0", port=8000)

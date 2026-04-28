@@ -1,6 +1,7 @@
 import tracemalloc
 from pathlib import Path
 
+from loguru import logger
 from mcp.server.fastmcp import Context, Image
 from mcp.types import TextContent
 from typing_extensions import Any
@@ -55,7 +56,7 @@ async def get_cuny_information(url: str, headless: bool = True):
             new_page.on("domcontentloaded", cuny_url_handles)
 
         response = await event_info.value
-        print("Event processing complete.")
+        logger.info("Event processing complete.")
 
         await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$16']")
         await asyncio.sleep(3)
@@ -66,7 +67,7 @@ async def get_cuny_information(url: str, headless: bool = True):
             print("Waiting to close...")
 
         response = await event_info.value
-        print("Event processing complete.")
+        logger.info("Event processing complete.")
         await context.close()
         await browser.close()
         return { "terms": terms_list, "courses": term_courses, "tuition": financial_semester, "degree_information": degree_information}
@@ -96,48 +97,37 @@ list[bytes]:
         await lehman360(page)
         return await fetch_cuny_id(page, type_of_card=type_of_card)
 
-async def get_course_details(query: str, college: Literal["leh01"] = "leh01", ctx: Context = None):
-    if ctx:
-        await ctx.info("Searching courses")
+async def get_course_details(query: str, college: Literal["leh01"] = "leh01"):
+    logger.info("Searching courses")
     results = await search_courses(query=query, college=college)
-    if ctx:
-        await ctx.info(f"Found {len(results)} courses for query '{query}'")
+    logger.info(f"Found {len(results)} courses for query '{query}'")
     shrunk = reduce_search_response(results)
-    if ctx:
-        await ctx.info(f"Shrunk search response to {len(shrunk)} courses")
+    logger.info(f"Shrunk search response to {len(shrunk)} courses")
     results_dict = dict()
 
     currentTerm = get_current_term()['id']
-    if ctx:
-        await ctx.info(f"Current term: {currentTerm}")
+    logger.info(f"Current term: {currentTerm}")
 
     nextTerm = next_term(term=str(currentTerm), academic_year=True)
-    if ctx:
-        await ctx.info(f"Next term: {nextTerm}")
+    logger.info(f"Next term: {nextTerm}")
     parsed_currentTerm = parse_section_code(currentTerm)
-    if ctx:
-        await ctx.info(f"Parsed current term: {parsed_currentTerm}")
+    logger.info(f"Parsed current term: {parsed_currentTerm}")
     parsed_nextTerm = parse_section_code(nextTerm)
-    if ctx:
-        await ctx.info(f"Parsed next term: {parsed_nextTerm}")
+    logger.info(f"Parsed next term: {parsed_nextTerm}")
 
     for course in shrunk:
-        if ctx:
-            await ctx.info(f"Processing course: {course['name']}")
+        logger.info(f"Processing course: {course['name']}")
         currentTermResults = get_course_detail(course['id'], course['sisId'], course['rawCourseId'], currentTerm)
-        if ctx:
-            await ctx.info(f"Got course detail for {course['name']}")
+        logger.info(f"Got course detail for {course['name']}")
         nextTermResults = get_course_detail(course['id'], course['sisId'], course['rawCourseId'], nextTerm)
-        if ctx:
-            await ctx.info(f"Got course detail for {course['name']} in next term")
+        logger.info(f"Got course detail for {course['name']} in next term")
         results_dict[course['name']] = {
             f"{parsed_currentTerm[1] + str(parsed_currentTerm[0])}": reduce_course_detail_response(currentTermResults),
             f"{parsed_nextTerm[1] + str(parsed_nextTerm[0])}": reduce_course_detail_response(nextTermResults),
         }
     results['searches'] = shrunk
 
-    if ctx:
-        await ctx.info(f"Completed processing {len(shrunk)} courses")
+    logger.info(f"Completed processing {len(shrunk)} courses")
     return {
         "status": "success",
         "query": query,
@@ -190,10 +180,7 @@ async def get_my_cuny_student_id(type_of_card: Literal["getEmplidCard", "getLibr
         else:
             return [TextContent(type="text", text=f"No card(s) found")]
 
-    if ctx:
-        await ctx.info("Fetching CUNY Student ID")
-    else:
-        print("Fetching CUNY Student ID")
+    logger.info("Fetching CUNY Student ID")
 
     result = get_image_path(type_of_card)
 
@@ -201,18 +188,10 @@ async def get_my_cuny_student_id(type_of_card: Literal["getEmplidCard", "getLibr
         print(result)
         return result
 
-    if ctx:
-        await ctx.info(
-            "CUNY Student ID not found in cache, fetching CUNY Student ID"
-        )
-    else:
-        print("CUNY Student ID not found in cache, fetching CUNY Student ID")
+    logger.info("CUNY Student ID not found in cache, fetching CUNY Student ID")
 
     results = await get_cuny_id_card(headless=True, type_of_card=type_of_card)
-    if ctx:
-        await ctx.info("CUNY Student ID fetched")
-    else:
-        print("CUNY Student ID fetched")
+    logger.info("CUNY Student ID fetched")
     return get_image_path(type_of_card)
 
 async def main():

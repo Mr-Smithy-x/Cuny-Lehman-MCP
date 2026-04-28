@@ -1,6 +1,7 @@
 import asyncio
 from typing import Literal
 
+from loguru import logger
 from playwright.async_api import Page
 
 from env import get_otp
@@ -47,7 +48,7 @@ async def handle_login_page(page: Page):
     :type page: Page
     :return: None
     """
-    print("Login page loaded", page.url)
+    logger.info("Login page loaded", page.url)
     await page.wait_for_selector("input[name=usernameDisplay]", timeout=15000)
     email, password, otp = get_otp()
     await page.fill("input[name=usernameDisplay]", email)
@@ -63,7 +64,7 @@ async def handle_otp_page(page: Page):
     :return: None
     """
     await page.wait_for_selector("input[placeholder='Enter TOTP']", timeout=15000)
-    print("OTP page loaded", page.url)
+    logger.info("OTP page loaded", page.url)
     email, password, otp = get_otp()
     await page.fill("input[placeholder='Enter TOTP']", otp)
     await page.wait_for_selector("button[class=oj-button-button]")
@@ -77,7 +78,7 @@ async def handle_criteria_page(page: Page):
     :type page: Page
     :return: None
     """
-    print("Criteria page loaded", page.url)
+    logger.info("Criteria page loaded", page.url)
     await page.wait_for_selector("div[id='welcomeTerms']", timeout=30000)
     page_content = await page.query_selector_all("div[id='welcomeTerms'] div[data-term]")
     for term in page_content:
@@ -89,7 +90,7 @@ async def handle_criteria_page(page: Page):
     await page.evaluate("this.window.UU.caseToggleLegend()")
     for index, (semester, (link, detail)) in enumerate(terms_list.items()):
         try:
-            print(f"Getting courses for {semester}")
+            logger.info(f"Getting courses for {semester}")
             evaluate_result = await page.evaluate(f"this.window.UU.caseTermContinue({link});")
             await page.wait_for_selector("div[id=legend_box]", timeout=10000)
             await asyncio.sleep(2)
@@ -101,14 +102,14 @@ async def handle_criteria_page(page: Page):
             term_courses[semester] = courses
             await page.go_back()
             await asyncio.sleep(1)
-            print(f"Index {index}, Semester: {semester}, {courses}\n")
+            logger.info(f"Index {index}, Semester: {semester}, {courses}\n")
         except:
             try:
                 await page.go_back()
             except:
                 pass
             await asyncio.sleep(1)
-            print(f"Error getting courses for {semester}")
+            logger.error(f"Error getting courses for {semester}")
     try:
         await page.close()
     except:
@@ -130,7 +131,6 @@ async def handle_degreeworks_page(page: Page):
     # html = await page.inner_html("main[id='main-content']")
     degree = await page.inner_text("main[id='main-content']")
     degree_information["content"] = degree
-    print(degree)
     try:
         await page.close()
     except:
@@ -155,7 +155,6 @@ async def handle_financial_page(page: Page):
         total_due = await cells[3].inner_text()
         financial_semester[term] = {"term": term, "charges": charges, "pending_aid": pending_aid,
                                     "total_due": total_due}
-    print(financial_semester)
     return financial_semester
 
 async def handle_other_pages(page: Page):
@@ -171,12 +170,12 @@ async def handle_other_pages(page: Page):
     elif "https://ssologin.cuny.edu/oaa/authnui/index.html" in page.url:
         pass
     elif "/psc/cnyihprd/EMPLOYEE/EMPL/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL?LP=CU_CS_SCC_STUDENT_HOMEPAGE_FL" in page.url:
-        print("Student Center page loaded", page.url)
+        logger.info("Student Center page loaded", page.url)
     elif "/psc/cnyihprd/EMPLOYEE/EMPL/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL" in page.url:
-        print("Main Dashboard page loaded", page.url)
+        logger.info("Main Dashboard page loaded", page.url)
         await page.goto(page.url[:-2] + "?LP=CU_CS_SCC_STUDENT_HOMEPAGE_FL", wait_until="domcontentloaded")
     else:
-        print("Page is loaded: url = ", page.url, " title = ", page.title, "")
+        logger.info("Page is loaded: url = ", page.url, " title = ", page.title, "")
 
 async def fetch_cuny_id(page: Page, type_of_card: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard") -> \
 list[bytes]:

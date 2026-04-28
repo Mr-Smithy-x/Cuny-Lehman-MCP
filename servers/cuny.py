@@ -42,8 +42,7 @@ async def fetch_my_cuny_information(
         error message in case of a failure.
     :rtype: dict
     """
-    ctx = cuny_info_mcp.get_context()
-    await ctx.info("Starting fetch_my_cuny_information")
+    logger.info("Starting fetch_my_cuny_information")
     tracemalloc.start()
     url = "http://cunyfirst.cuny.edu/"
     try:
@@ -70,7 +69,6 @@ async def fetch_my_cuny_information(
     name="fetch_my_cuny_courses"
 )
 async def fetch_my_cuny_courses(
-    ctx: Context,
     timeout: int = 30000,
 ) -> dict:
     """
@@ -104,13 +102,14 @@ async def fetch_my_cuny_courses(
             await page.goto(url, wait_until="networkidle", timeout=timeout)
 
             if "portaldown.cuny.edu" in page.url:
+                logger.info("Portal is down")
                 return {"status": "error", "url": url, "error": "Portal is down"}
 
             # Optional: wait for specific dynamic content to appear
             email, password, otp = get_otp()
-            await ctx.info(f"Logging in as {email}")
+            logger.info(f"Logging in as {email}")
             await handle_login_page(page)
-            await ctx.log("info","Entering OTP...")
+            logger.log("info","Entering OTP...")
             await handle_otp_page(page)
 
             #student center
@@ -120,17 +119,17 @@ async def fetch_my_cuny_courses(
             #schedule builder
             await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$13']", timeout=timeout)
 
-            await ctx.log("info","Going to schedule builder")
+            logger.log("info","Going to schedule builder")
 
             async with page.expect_popup() as popup_info:
                 await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$13']")
 
-            await ctx.info("Waiting for popup...")
+            logger.info("Waiting for popup...")
             new_page = await popup_info.value
-            await ctx.info("Popup opened!")
+            logger.info("Popup opened!")
 
             await new_page.wait_for_load_state('networkidle')
-            await ctx.info(await new_page.title())
+            logger.info(await new_page.title())
 
             courses = await handle_criteria_page(new_page)
             courses_json = json.dumps(courses)
@@ -159,7 +158,6 @@ async def fetch_my_cuny_courses(
     name="fetch_my_cuny_degree_progress"
 )
 async def fetch_my_cuny_degree_progress(
-    ctx: Context,
     timeout: int = 30000,
 ) -> dict:
     """
@@ -202,9 +200,9 @@ async def fetch_my_cuny_degree_progress(
 
             # Optional: wait for specific dynamic content to appear
             email, password, otp = get_otp()
-            await ctx.info(f"Logging in as {email}")
+            logger.info(f"Logging in as {email}")
             await handle_login_page(page)
-            await ctx.log("info","Entering OTP...")
+            logger.log("info","Entering OTP...")
             await handle_otp_page(page)
 
             degree_information_json = json.dumps(await handle_degreeworks_page(page))
@@ -232,7 +230,6 @@ async def fetch_my_cuny_degree_progress(
     name="fetch_my_cuny_financial_cost"
 )
 async def fetch_my_cuny_financial_cost(
-    ctx: Context,
     timeout: int = 30000,
 ) -> dict:
     """
@@ -267,9 +264,9 @@ async def fetch_my_cuny_financial_cost(
                 return {"status": "error", "url": url, "error": "Portal is down"}
 
             email, password, otp = get_otp()
-            await ctx.info(f"Logging in as {email}")
+            logger.info(f"Logging in as {email}")
             await handle_login_page(page)
-            await ctx.log("info", "Entering OTP...")
+            logger.log("info", "Entering OTP...")
             await handle_otp_page(page)
 
             #student center
@@ -279,7 +276,7 @@ async def fetch_my_cuny_financial_cost(
             #schedule builder
             await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$16']", timeout=timeout)
 
-            await ctx.log("info","Going to check financial cost")
+            logger.log("info","Going to check financial cost")
             #new_page_future = context.wait_for_event("page")
             await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$16']")
 
@@ -287,7 +284,7 @@ async def fetch_my_cuny_financial_cost(
 
             await page.wait_for_load_state('networkidle')
 
-            await ctx.log("info","Fetching costs")
+            logger.log("info","Fetching costs")
             financial_cost_json = json.dumps(await handle_financial_page(page))
 
             return {
@@ -400,5 +397,5 @@ async def resolve_section_code(year: int, semester: Literal["spring", "summer", 
 if __name__ == "__main__":
     # Runs MCP server over stdio by default
 
-    cuny_info_mcp.run()
+    cuny_info_mcp.run(transport='stdio')
     #asyncio.run(fetch_my_cuny_student_id(ctx=None, type_of_card="both"))

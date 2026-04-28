@@ -3,28 +3,28 @@
     "fetch_rendered_html": {
       "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
       "args": [
-        "<path>/Cuny_Lehman_MCP/fetch_rendered_html.py"
+        "<path>/Cuny_Lehman_MCP/servers/fetch_rendered_html.py"
       ],
       "timeout": 120000
     },
     "cuny": {
       "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
       "args": [
-        "<path>/Cuny_Lehman_MCP/cuny.py"
+        "<path>/Cuny_Lehman_MCP/servers/cuny.py"
       ],
       "timeout": 120000
     },
     "powerpoint": {
       "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
       "args": [
-        "<path>/Cuny_Lehman_MCP/powerpoint.py"
+        "<path>/Cuny_Lehman_MCP/servers/powerpoint.py"
       ],
       "timeout": 120000
     },
     "system": {
       "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
       "args": [
-        "<path>/Cuny_Lehman_MCP/system.py"
+        "<path>/Cuny_Lehman_MCP/servers/system.py"
       ],
       "timeout": 120000
     }

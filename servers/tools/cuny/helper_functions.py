@@ -1,11 +1,9 @@
 import json
 from datetime import datetime
 from typing import Literal
-
-import dotenv
 import requests
 from playwright.async_api import Page, async_playwright
-from pyotp import TOTP
+
 
 def get_current_term_via_time():
     """

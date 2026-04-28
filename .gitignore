@@ -1,11 +1,11 @@
 .env
 .venv
 .idea
-books.py
-tools/books/fetch_book.py
+servers/books.py
+servers/tools/books/fetch_book.py
 pong_royale.py
-media.py
-voice.py
+servers/media.py
+servers/voice.py
 *.png
 *.jpg
 *.mp4
@@ -16,6 +16,6 @@ voice.py
 __pycache__
 .DS_Store
 powerpoint-mcp
-/tools/media
-/tools/servers
-/tools/books/
+/servers/tools/media
+/servers/tools/servers
+/servers/tools/books/

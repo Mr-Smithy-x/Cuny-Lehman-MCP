@@ -1,5 +1,4 @@
 import asyncio
-import os
 from typing import Literal
 
 from playwright.async_api import Page

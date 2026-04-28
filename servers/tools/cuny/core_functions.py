@@ -1,18 +1,13 @@
-import asyncio
-import json
-import os
 import tracemalloc
 from pathlib import Path
 
 from mcp.server.fastmcp import Context, Image
 from mcp.types import TextContent
-from playwright.async_api import async_playwright, Page
-from typing_extensions import Literal, Any
+from typing_extensions import Any
 
-from tools.cuny.handles import cuny_url_handles, handle_login_page, handle_otp_page, terms_list, term_courses, \
-    financial_semester, degree_information, fetch_cuny_id
-from tools.cuny.helper_functions import get_current_term, next_term, parse_section_code, get_course_detail, search_courses
-from tools.cuny.response_reducer import reduce_search_response, reduce_course_detail_response
+from .handles import *
+from .helper_functions import *
+from .response_reducer import *
 
 
 async def lehman360(page: Page):
@@ -74,7 +69,7 @@ async def get_cuny_information(url: str, headless: bool = True):
         print("Event processing complete.")
         await context.close()
         await browser.close()
-        return { "terms": terms_list,"courses": term_courses,"tuition": financial_semester, "degree_information": degree_information }
+        return { "terms": terms_list, "courses": term_courses, "tuition": financial_semester, "degree_information": degree_information}
 
 async def get_cuny_id_card(headless: bool = True,
                            type_of_card: Literal["getEmplidCard", "getLibraryIdCard", "both"] = "getEmplidCard") -> \
@@ -226,7 +221,7 @@ async def main():
     #await login(login_url, wait_for_selector="input[name=usernameDisplay]")
     #results = await cuny_browser_login(login_url, headless=False)
     #results = await l360(headless=False, typeOfCard="both")
-    print(next_term(term="1269",academic_year=False))
+    print(next_term(term="1269", academic_year=False))
     #results_dict = await query_courses("Artificial Intelligence")
     results_dict = await get_course_details("CMP 765", None)
 

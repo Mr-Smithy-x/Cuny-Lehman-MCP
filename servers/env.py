@@ -10,7 +10,7 @@ def get_otp() -> tuple[str, str, str]:
     otp url
     https://ssologin.cuny.edu/oaa-totp-factor/rui/index.html
     """
-    loc = dotenv.find_dotenv('.env')
+    loc = dotenv.find_dotenv('../.env')
     env = dotenv.load_dotenv(loc)
     secret = str(dotenv.get_key(loc, "CUNY_TOPT"))
     email = str(dotenv.get_key(loc, "CUNY_EMAIL"))

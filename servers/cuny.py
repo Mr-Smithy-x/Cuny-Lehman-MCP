@@ -1,19 +1,16 @@
-import asyncio
 import json
-import os
 import sys
 import tracemalloc
-from pathlib import Path
-from typing import Literal, Any
+from typing import Literal
+
+from loguru import logger
 from mcp.server.fastmcp import FastMCP, Context, Image
-from mcp.types import TextContent
 from playwright.async_api import async_playwright
 
 from env import get_otp
-from tools.cuny.core_functions import get_cuny_information, get_cuny_id_card, get_course_details, get_my_cuny_student_id
-from tools.cuny.handles import handle_login_page, handle_otp_page, handle_criteria_page, handle_degreeworks_page, \
-    handle_financial_page
-from loguru import logger
+from tools.cuny.core_functions import get_cuny_information, get_course_details, get_my_cuny_student_id
+from tools.cuny.handles import handle_login_page, handle_otp_page, handle_criteria_page, \
+    handle_degreeworks_page, handle_financial_page
 
 logger.remove()
 logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
@@ -30,7 +27,6 @@ cuny_info_mcp = FastMCP("cuny-info-fetcher")
     name="fetch_my_cuny_information"
 )
 async def fetch_my_cuny_information(
-    ctx: Context,
     headless: bool = True,
 ) -> dict:
     """
@@ -39,8 +35,6 @@ async def fetch_my_cuny_information(
     execution of multiple individual operations, making it more time-efficient compared to
     using separate functions.
 
-    :param ctx: The context required for executing the function.
-    :type ctx: Context
     :param headless: Indicates whether the browser should operate in headless mode. Defaults to True.
     :type headless: bool
     :return: A dictionary containing the result of the operation. The dictionary includes the
@@ -48,6 +42,8 @@ async def fetch_my_cuny_information(
         error message in case of a failure.
     :rtype: dict
     """
+    ctx = cuny_info_mcp.get_context()
+    await ctx.info("Starting fetch_my_cuny_information")
     tracemalloc.start()
     url = "http://cunyfirst.cuny.edu/"
     try:

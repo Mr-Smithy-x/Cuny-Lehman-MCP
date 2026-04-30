@@ -27,10 +27,10 @@ Configure your MCP client to connect to the server hosting these tools. Add the 
 ```json
 {
   "mcpServers": {
-    "fetch_rendered_html": {
+    "network": {
       "command": "<path>/Cuny_Lehman_MCP/.venv/bin/python",
       "args": [
-        "<path>/Cuny_Lehman_MCP/servers/fetch_rendered_html.py"
+        "<path>/Cuny_Lehman_MCP/servers/network.py"
       ],
       "timeout": 120000
     },

@@ -10,7 +10,7 @@ from playwright.async_api import async_playwright
 from pydantic import Field
 
 # Initialize MCP server
-mcp = FastMCP("rendered-html-fetcher")
+mcp = FastMCP("network")
 
 
 @mcp.tool(

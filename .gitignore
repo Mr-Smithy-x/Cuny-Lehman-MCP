@@ -6,6 +6,7 @@ servers/tools/books/fetch_book.py
 pong_royale.py
 servers/media.py
 servers/voice.py
+servers/propertyroom.py
 *.png
 *.jpg
 *.mp4
@@ -19,3 +20,6 @@ powerpoint-mcp
 /servers/tools/media
 /servers/tools/servers
 /servers/tools/books/
+/servers/tools/propertyroom
+/servers/data/bible/
+/servers/torah.py

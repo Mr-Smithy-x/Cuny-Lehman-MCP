@@ -9,6 +9,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import TextContent
 from pydantic import Field
+from PyPDF2 import PdfReader
 
 # ── Server instantiation ──────────────────────────────────────────────────────
 mcp = FastMCP(
@@ -97,6 +98,8 @@ def read_file(
         raise ToolError(f"File not found: '{path}'")
     if not p.is_file():
         raise ToolError(f"'{path}' is not a file.")
+    if p.suffix.lower() == ".pdf":
+        return read_pdf(path)
     return p.read_text(encoding="utf-8")
 
 

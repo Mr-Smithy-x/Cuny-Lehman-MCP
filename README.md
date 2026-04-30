@@ -195,6 +195,17 @@ Resolves the section code based on the provided year and semester.
 }
 ```
 
+## API Endpoints
+
+This tool interacts with CUNY's internal systems (e.g., CUNYFirst). Ensure you have proper authentication credentials configured in your environment.
+
+## Security & Privacy
+
+- **Data Sensitivity:** The data retrieved includes PII and financial information. Handle this data with care.
+- **Authentication:** Ensure that your API keys or session tokens are stored securely and not exposed in code.
+- **Rate Limiting:** Be mindful of CUNY's rate limits to avoid being blocked.
+
+
 ---
 
 ## ⚙️ `mcp/system` Server Tools
@@ -368,13 +379,13 @@ Fetches the fully rendered HTML content of a webpage, executing client-side Java
 }
 ```
 
-# MCP PowerPoint Automation Tools Reference
+## MCP PowerPoint Automation Tools Reference
 
 A comprehensive guide to the available MCP tools for programmatic PowerPoint creation, layout management, and deck manipulation.
 
 ---
 
-## 🏗️ Presentation Foundation
+### 🏗️ Presentation Foundation
 
 | Tool | Purpose | Key Parameters |
 |------|---------|----------------|
@@ -383,7 +394,7 @@ A comprehensive guide to the available MCP tools for programmatic PowerPoint cre
 
 ---
 
-## 📐 Layout & Content Slides
+### 📐 Layout & Content Slides
 
 All slide-adding tools require a `file_path` and `title`. They automatically apply the chosen `theme` and handle font auto-scaling to prevent overflow.
 
@@ -402,7 +413,7 @@ All slide-adding tools require a `file_path` and `title`. They automatically app
 
 ---
 
-## 🛠️ Deck Management & Manipulation
+### 🛠️ Deck Management & Manipulation
 
 | Tool | Purpose | Key Parameters |
 |------|---------|----------------|
@@ -414,7 +425,7 @@ All slide-adding tools require a `file_path` and `title`. They automatically app
 
 ---
 
-## 🎨 Theming & Export
+### 🎨 Theming & Export
 
 | Tool | Purpose | Key Parameters |
 |------|---------|----------------|
@@ -423,7 +434,7 @@ All slide-adding tools require a `file_path` and `title`. They automatically app
 
 ---
 
-## 💡 Implementation Notes
+### 💡 Implementation Notes
 
 - **`file_path`**: All tools expect a relative path to the server root. Use `.pptx` extension for output files.
 - **`theme`**: Available options are `midnight`, `forest`, `coral`, `charcoal`, and `teal`. Consistent theming is automatically applied across all added slides.
@@ -436,7 +447,7 @@ All slide-adding tools require a `file_path` and `title`. They automatically app
 
 ---
 
-## 🚀 Quick Workflow Example
+### 🚀 Quick Workflow Example
 ```python
 # 1. Create
 create_presentation(file_path="reports/quarterly_review.pptx", title="Q3 Performance", theme="midnight")
@@ -449,7 +460,7 @@ add_stat_callout_slide(file_path="reports/quarterly_review.pptx", title="Key Met
 export_preview_image(file_path="reports/quarterly_review.pptx", slide_idx=0, output_png="preview_slide0.png")
 ```
 
-Let me know if you need a specific deck generated or a tool explained in more depth!
+Choose whether you need a specific deck generated!
 
 ---
 
@@ -471,18 +482,6 @@ MCP servers support runtime introspection. Use the following methods to discover
   }
 }
 ```
-
-
-## API Endpoints
-
-This tool interacts with CUNY's internal systems (e.g., CUNYFirst). Ensure you have proper authentication credentials configured in your environment.
-
-## Security & Privacy
-
-- **Data Sensitivity:** The data retrieved includes PII and financial information. Handle this data with care.
-- **Authentication:** Ensure that your API keys or session tokens are stored securely and not exposed in code.
-- **Rate Limiting:** Be mindful of CUNY's rate limits to avoid being blocked.
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

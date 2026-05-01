@@ -1,4 +1,6 @@
 mcp
+fastmcp
+fastmcp[openai]
 playwright
 requests
 pyotp

@@ -1,17 +1,68 @@
+import json
 import os
 from pathlib import Path
 from typing import Annotated
 
 import requests
 from PyPDF2 import PdfReader
-from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.exceptions import ToolError
+from bs4 import BeautifulSoup
+from fastmcp import FastMCP, Context
+from fastmcp.client.sampling.handlers.openai import OpenAISamplingHandler
+from fastmcp.exceptions import ToolError
+from mcp.types import TextContent
+from openai import AsyncOpenAI
 from playwright.async_api import async_playwright
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 # Initialize MCP server
-mcp = FastMCP("network")
+mcp = FastMCP(
+    name="network",
+    sampling_handler=OpenAISamplingHandler(
+        client=AsyncOpenAI(
+            base_url="http://192.168.11.162:1234/v1",  # LM Studio's local API
+            api_key="sk-lm-BjpfcTpU:iel5caRIu5H0PEnBabIF"
+        ),                  # any string works
+        default_model="qwen/qwen3.6-35b-a3b", # model loaded in LM Studio
+    ),
+    sampling_handler_behavior="always",  # bypass client entirely
+)
 
+
+
+class VehicleAuction(BaseModel):
+    pdfs: list[str]
+
+class ConfirmAuction(BaseModel):
+    confirmed: bool
+
+@mcp.tool(
+    title="Get Vehicle Auctions",
+    description="Get vehicle auctions from a given URL",
+    name="get_vehicle_auctions"
+)
+async def get_vehicle_auctions(ctx: Context) -> TextContent:
+    result = requests.get("https://www.nyc.gov/site/finance/vehicles/auctions.page")
+    content = result.content.decode('utf-8')
+    try:
+        soup = BeautifulSoup(content, "html.parser")
+        base_url = "https://www.nyc.gov"
+        pdfs = [base_url + a["href"] for a in soup.find_all("a", href=True) if a["href"].endswith(".pdf")]
+
+        return TextContent(type="text",
+            text= json.dumps({
+                "status": "success",
+                "pdfs": json.dumps(pdfs),
+                "$hint": "Download all pdf files, read all pdf files and list all vehicles in the pdf separated by when and where the auction will take place. Each should be displayed in a table with vin, plate number, vehicle model and year, state in a table."
+            })
+       )
+    except Exception as e:
+        return TextContent(
+            type="text",
+            text=json.dumps({
+                "status": "error",
+                "error": e
+            })
+        )
 
 @mcp.tool(
     title="Fetch Rendered HTML",
@@ -207,3 +258,4 @@ def read_pdf(
 if __name__ == "__main__":
     # Runs MCP server over stdio by default
     mcp.run()
+

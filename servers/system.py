@@ -11,6 +11,8 @@ from mcp.types import TextContent
 from pydantic import Field
 from PyPDF2 import PdfReader
 
+from network import read_pdf
+
 # ── Server instantiation ──────────────────────────────────────────────────────
 mcp = FastMCP(
     name="filesystem",
@@ -91,15 +93,21 @@ def read_file(
             )
         ),
     ],
-) -> str:
+) -> str | list[str]:
     """Return the text content of the file at *path*."""
     p = safe_path(path)
-    if not p.exists():
+    if not p.exists() and not Path(path).exists():
         raise ToolError(f"File not found: '{path}'")
-    if not p.is_file():
+    if not p.is_file() and not Path(path).is_file():
         raise ToolError(f"'{path}' is not a file.")
     if p.suffix.lower() == ".pdf":
-        return read_pdf(path)
+        try:
+            return read_pdf(path, True)
+        except Exception as e:
+            try:
+                return read_pdf(str(p), True)
+            except Exception as e:
+                raise ToolError(f"Failed to read PDF file '{path}': {e}")
     return p.read_text(encoding="utf-8")
 
 

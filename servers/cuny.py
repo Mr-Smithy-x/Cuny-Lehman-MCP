@@ -113,16 +113,16 @@ async def fetch_my_cuny_courses(
             await handle_otp_page(page)
 
             #student center
-            await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$1']", timeout=timeout)
-            await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$1']")
+            await page.wait_for_selector("div[groupletid=CU_HP_TILE_STUDENT_HP]", timeout=timeout)
+            await page.click("div[groupletid=CU_HP_TILE_STUDENT_HP]")
 
             #schedule builder
-            await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$13']", timeout=timeout)
+            await page.wait_for_selector("div[groupletid=CU_SCHEDULE_BUILDER]", timeout=timeout)
 
             logger.log("info","Going to schedule builder")
 
             async with page.expect_popup() as popup_info:
-                await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$13']")
+                await page.click("div[groupletid=CU_SCHEDULE_BUILDER]")
 
             logger.info("Waiting for popup...")
             new_page = await popup_info.value
@@ -270,15 +270,15 @@ async def fetch_my_cuny_financial_cost(
             await handle_otp_page(page)
 
             #student center
-            await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$1']", timeout=timeout)
-            await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$1']")
+            await page.wait_for_selector("div[groupletid=CU_HP_TILE_STUDENT_HP]", timeout=timeout)
+            await page.click("div[groupletid=CU_HP_TILE_STUDENT_HP]")
 
             #schedule builder
-            await page.wait_for_selector("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$16']", timeout=timeout)
+            await page.wait_for_selector("div[groupletid=CS_SSF_FIN_ACCT_ML_FL_GB_LNK]", timeout=timeout)
 
             logger.log("info","Going to check financial cost")
             #new_page_future = context.wait_for_event("page")
-            await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$16']")
+            await page.click("div[groupletid=CS_SSF_FIN_ACCT_ML_FL_GB_LNK]")
 
             #await new_page.evaluate("() => this.window.AS.openCourseBrowser();")
 

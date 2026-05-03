@@ -35,7 +35,7 @@ async def cuny_url_handles(page: Page):
         await handle_criteria_page(page)
     elif "https://degreeworks.cuny.edu/Dashboard_lc" in page.url:
         await handle_degreeworks_page(page)
-    elif "https://cssa.cunyfirst.cuny.edu/psc/cnycsprd_6/EMPLOYEE/SA/c/SSF_STUDENT_FL.SSF_FIN_ACCT_MD_FL.GBL" in page.url:
+    elif "/EMPLOYEE/SA/c/SSF_STUDENT_FL.SSF_FIN_ACCT_MD_FL.GBL" in page.url:
         await handle_financial_page(page)
     else:
         await handle_other_pages(page)

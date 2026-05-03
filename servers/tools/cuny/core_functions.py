@@ -48,7 +48,7 @@ async def get_cuny_information(url: str, headless: bool = True):
         await asyncio.sleep(1)
 
         async with page.expect_popup() as popup_info:
-            await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$13']")
+            await page.click("div[groupletid=CU_SCHEDULE_BUILDER]")
 
         new_page = await popup_info.value
 
@@ -58,7 +58,8 @@ async def get_cuny_information(url: str, headless: bool = True):
         response = await event_info.value
         logger.info("Event processing complete.")
 
-        await page.click("div[id='win0groupletPTNUI_LAND_REC_GROUPLET$16']")
+        await page.click("div[groupletid=CS_SSF_FIN_ACCT_ML_FL_GB_LNK]")
+        await page.wait_for_load_state('networkidle')
         await asyncio.sleep(3)
         await page.goto("https://degreeworks.cuny.edu/Dashboard_lc", wait_until="domcontentloaded")
         await asyncio.sleep(1)

@@ -18,20 +18,19 @@ async def lehman360(page: Page):
 
     await handle_otp_page(page)
 
-async def get_cuny_information(url: str, headless: bool = True):
+async def get_cuny_information(headless: bool = True):
     """
     Performs automated login to the CUNY browser system using Playwright and navigates through
     several system pages to extract information such as terms, courses, tuition details, and
     degree information.
 
-    :param url: URL to the login page of the CUNY system.
-    :type url: str
     :param headless: Indicates whether the browser should run in headless mode. Defaults to True.
     :type headless: bool
     :return: A dictionary containing extracted data including terms, courses, tuition details,
         and degree information.
     :rtype: dict
     """
+    url = "http://cunyfirst.cuny.edu/"
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=headless)
 

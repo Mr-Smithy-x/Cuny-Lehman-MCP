@@ -46,7 +46,7 @@ async def fetch_my_cuny_information(
     tracemalloc.start()
     url = "http://cunyfirst.cuny.edu/"
     try:
-        content = await get_cuny_information(url, headless=headless)
+        content = await get_cuny_information(headless=headless)
         jsonStr = json.dumps(content)
         return {
             "status": "success",

@@ -101,7 +101,7 @@ async def handle_criteria_page(page: Page):
                 courses.append(text)
             term_courses[semester] = courses
             await page.go_back()
-            await asyncio.sleep(1)
+            await asyncio.sleep(3)
             logger.info(f"Index {index}, Semester: {semester}, {courses}\n")
         except:
             try:
@@ -124,16 +124,24 @@ async def handle_degreeworks_page(page: Page):
     :type page: Page
     :return: None
     """
-    await page.wait_for_load_state('networkidle', timeout=10000)
-    await page.wait_for_selector("div[id='student-details']", timeout=15000)
+    await page.wait_for_load_state('networkidle', timeout=0)
+    await page.wait_for_selector("div[id='student-details']", timeout=30000)
+
+    logger.info("Degree page loaded", page.url)
     # Extract fully rendered HTML
     # html = await page.content()
     # html = await page.inner_html("main[id='main-content']")
     degree = await page.inner_text("main[id='main-content']")
-    degree_information["content"] = degree
+    studentId = await page.input_value('#student-id')
+    studentName = await page.input_value('#student-name')
+    degreeType = await page.input_value('#degree')
+    #student_details = await page.inner_text("div[id='student-details']")
+    degree_information["content"] = f"Name: {studentName}, Degree: {degreeType}, Student ID: {studentId}\n{degree}"
+    logger.info(f"Degree information received")
     try:
         await page.close()
-    except:
+    except Exception as e:
+        logger.error(f"Error closing page: {e}")
         pass
     return degree_information
 
@@ -145,7 +153,7 @@ async def handle_financial_page(page: Page):
     :type page: Page
     :return: None
     """
-    await page.wait_for_selector("tbody.ps_grid-body tr.ps_grid-row.psc_rowact.psc_disabled")
+    await page.wait_for_selector("tbody.ps_grid-body tr.ps_grid-row.psc_rowact.psc_disabled", timeout=30000)
     html_semester_costs = await page.query_selector_all("tbody.ps_grid-body tr.ps_grid-row.psc_rowact.psc_disabled")
     for semester in html_semester_costs:
         cells = await semester.query_selector_all("td")
@@ -173,7 +181,7 @@ async def handle_other_pages(page: Page):
         logger.info("Student Center page loaded", page.url)
     elif "/psc/cnyihprd/EMPLOYEE/EMPL/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL" in page.url:
         logger.info("Main Dashboard page loaded", page.url)
-        await page.goto(page.url[:-2] + "?LP=CU_CS_SCC_STUDENT_HOMEPAGE_FL", wait_until="domcontentloaded")
+        await page.goto(page.url[:-2] + "?LP=CU_CS_SCC_STUDENT_HOMEPAGE_FL", wait_until="domcontentloaded", timeout=30000)
     else:
         logger.info("Page is loaded: url = ", page.url, " title = ", page.title, "")
 

@@ -39,32 +39,32 @@ async def get_cuny_information(url: str, headless: bool = True):
         page = await browser.new_page()
 
         page.on("domcontentloaded", cuny_url_handles)
-        await page.goto(url, wait_until="domcontentloaded")
+        await page.goto(url, wait_until="domcontentloaded", timeout=60000)
 
         if "portaldown.cuny.edu" in page.url:
             return {"status": "error", "url": url, "error": "Portal is down"}
 
-        await page.wait_for_url("**/psc/cnyihprd/EMPLOYEE/EMPL/c/**", wait_until="domcontentloaded")
+        await page.wait_for_url("**/psc/cnyihprd/EMPLOYEE/EMPL/c/**", wait_until="domcontentloaded", timeout=0)
         await asyncio.sleep(1)
 
-        async with page.expect_popup() as popup_info:
+        async with page.expect_popup(timeout=0) as popup_info:
             await page.click("div[groupletid=CU_SCHEDULE_BUILDER]")
 
         new_page = await popup_info.value
 
-        async with new_page.expect_event('close') as event_info:
+        async with new_page.expect_event('close', timeout=0) as event_info:
             new_page.on("domcontentloaded", cuny_url_handles)
 
         response = await event_info.value
         logger.info("Event processing complete.")
 
         await page.click("div[groupletid=CS_SSF_FIN_ACCT_ML_FL_GB_LNK]")
-        await page.wait_for_load_state('networkidle')
+        await page.wait_for_load_state('networkidle', timeout=30000)
         await asyncio.sleep(3)
-        await page.goto("https://degreeworks.cuny.edu/Dashboard_lc", wait_until="domcontentloaded")
+        await page.goto("https://degreeworks.cuny.edu/Dashboard_lc", wait_until="domcontentloaded", timeout=0)
         await asyncio.sleep(1)
 
-        async with page.expect_event('close') as event_info:
+        async with page.expect_event('close', timeout=0) as event_info:
             print("Waiting to close...")
 
         response = await event_info.value

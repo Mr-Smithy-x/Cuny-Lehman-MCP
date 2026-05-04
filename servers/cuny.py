@@ -55,6 +55,7 @@ async def fetch_my_cuny_information(
             "json": jsonStr
         }
     except Exception as e:
+        logger.error(f"Error fetching CUNY information: {e}")
         return {
             "status": "error",
             "url": url,

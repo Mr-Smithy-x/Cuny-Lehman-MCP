@@ -47,12 +47,12 @@ async def fetch_my_cuny_information(
     url = "http://cunyfirst.cuny.edu/"
     try:
         content = await get_cuny_information(headless=headless)
-        jsonStr = json.dumps(content)
+        json_str = json.dumps(content)
         return {
             "status": "success",
             "url": url,
-            "json_length": len(jsonStr),
-            "json": jsonStr
+            "json_length": len(json_str),
+            "json": json_str
         }
     except Exception as e:
         logger.error(f"Error fetching CUNY information: {e}")
@@ -80,8 +80,6 @@ async def fetch_my_cuny_courses(
     JSON content. The resulting information, including the status, URL, and extracted
     JSON data, is returned as a dictionary.
 
-    :param ctx: The asynchronous context object used for logging and other utility methods.
-    :type ctx: Context
     :param timeout: The maximum time, in milliseconds, to wait for page actions like navigation,
         element rendering, or dynamic content to load. Defaults to 30000 milliseconds.
     :type timeout: int
@@ -169,9 +167,6 @@ async def fetch_my_cuny_degree_progress(
     navigates to the student's dashboard, and extracts the rendered JSON content to
     provide the requested academic details.
 
-    :param ctx: The application context, used for logging information during execution.
-                Assumes an object with a `log` method for log messages.
-                Type: Context
     :param timeout: The time in milliseconds to wait for operations such as page navigation
                     or element selection before timing out. Defaults to 30000 (30 seconds).
                     Type: int
@@ -241,8 +236,6 @@ async def fetch_my_cuny_financial_cost(
     handles login with email, password, and OTP (one-time password), and extracts
     all relevant information regarding semester costs.
 
-    :param ctx: Context instance for logging and runtime operation.
-    :type ctx: Context
     :param timeout: Timeout value in milliseconds for waiting operations,
         such as loading pages or waiting for selectors.
     :type timeout: int
@@ -338,8 +331,8 @@ async def fetch_my_cuny_student_id(ctx: Context, type_of_card: Literal["getEmpli
     title="Search Courses on CUNY",
     name="search_courses_on_cuny"
 )
-async def search_courses_on_cuny(ctx: Context, query: str, college: Literal["leh01"] = "leh01"):
-    return await get_course_details(query, college, ctx)
+async def search_courses_on_cuny(query: str, college: Literal["leh01"] = "leh01"):
+    return await get_course_details(query, college)
 
 
 @mcp.tool(

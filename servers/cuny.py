@@ -44,7 +44,7 @@ async def fetch_my_cuny_information(
     """
     logger.info("Starting fetch_my_cuny_information")
     tracemalloc.start()
-    url = "http://cunyfirst.cuny.edu/"
+    url = "https://cunyfirst.cuny.edu/"
     try:
         content = await get_cuny_information(headless=headless)
         json_str = json.dumps(content)
@@ -75,21 +75,21 @@ async def fetch_my_cuny_courses(
     """
     A coroutine that fetches CUNY course schedules and details from the CUNY First platform.
 
-    This function utilizes Playwright for browser automation and performs tasks such as
+    This function uses Playwright for browser automation and performs tasks such as
     login, OTP entry, navigation to the course details section, and extraction of rendered
     JSON content. The resulting information, including the status, URL, and extracted
     JSON data, is returned as a dictionary.
 
     :param timeout: The maximum time, in milliseconds, to wait for page actions like navigation,
-        element rendering, or dynamic content to load. Defaults to 30000 milliseconds.
+        element rendering, or dynamic content to load. Defaults to 30_000 milliseconds.
     :type timeout: int
     :return: A dictionary containing the result of the operation. On success, it includes the
         status as "success," the source URL, and rendered JSON information such as length and
         content. On error, it returns the status as "error," the source URL, and the error message.
-    :rtype: dict
+    :rtype: Dict
     """
     tracemalloc.start()
-    url = "http://cunyfirst.cuny.edu/"
+    url = "https://cunyfirst.cuny.edu/"
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -168,7 +168,7 @@ async def fetch_my_cuny_degree_progress(
     provide the requested academic details.
 
     :param timeout: The time in milliseconds to wait for operations such as page navigation
-                    or element selection before timing out. Defaults to 30000 (30 seconds).
+                    or element selection before timing out. Defaults to 30_000 (30 seconds).
                     Type: int
     :return: A dictionary containing the following keys:
              - "status": A string indicating the outcome ("success" or "error").
@@ -244,7 +244,7 @@ async def fetch_my_cuny_financial_cost(
     :rtype: dict
     """
     tracemalloc.start()
-    url = "http://cunyfirst.cuny.edu/"
+    url = "https://cunyfirst.cuny.edu/"
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context()

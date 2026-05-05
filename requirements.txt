@@ -19,3 +19,4 @@ python-dotenv
 beautifulsoup4
 pydantic
 comtypes
+vininfo

@@ -13,6 +13,7 @@ from mcp.types import TextContent
 from openai import AsyncOpenAI
 from playwright.async_api import async_playwright
 from pydantic import BaseModel, Field
+from vininfo import Vin
 
 from env import get_lm_studio_api_key, get_lm_studio_host_address, get_lm_studio_host_port, get_lm_studio_host_scheme, \
     get_lm_studio_default_model
@@ -30,13 +31,20 @@ mcp = FastMCP(
     sampling_handler_behavior="always",  # bypass client entirely
 )
 
+@mcp.tool(
+    title="Get vehicle details by vin",
+    description="Get vehicle details by vin",
+    name="get_vehicle_details_by_vin"
+)
+async def get_vehicle_details_by_vin(vehicle_identification_number: str):
+    vin = Vin(vehicle_identification_number)
+    vin.verify_checksum()  # False
+    return TextContent(type="text", text=json.dumps(
+        {
+            'annotate': vin.annotate()
+        }
+    ))
 
-
-class VehicleAuction(BaseModel):
-    pdfs: list[str]
-
-class ConfirmAuction(BaseModel):
-    confirmed: bool
 
 @mcp.tool(
     title="Get Vehicle Auctions",
@@ -55,7 +63,7 @@ async def get_vehicle_auctions(ctx: Context) -> TextContent:
             text= json.dumps({
                 "status": "success",
                 "pdfs": json.dumps(pdfs),
-                "$hint": "Download all pdf files, read all pdf files and list all vehicles in the pdf separated by when and where the auction will take place. Each should be displayed in a table with vin, plate number, vehicle model and year, state in a table."
+                "$hint": "Download all pdf files, read all pdf files and list all vehicles in the pdf separated by when and where the auction will take place. Each should be displayed in a table with vin (decode the vin by calling `get_vehicle_details_by_vin`), vin, plate number, vehicle model and year, state in a table."
             })
        )
     except Exception as e:

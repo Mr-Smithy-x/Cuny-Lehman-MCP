@@ -14,15 +14,18 @@ from openai import AsyncOpenAI
 from playwright.async_api import async_playwright
 from pydantic import BaseModel, Field
 
+from env import get_lm_studio_api_key, get_lm_studio_host_address, get_lm_studio_host_port, get_lm_studio_host_scheme, \
+    get_lm_studio_default_model
+
 # Initialize MCP server
 mcp = FastMCP(
     name="network",
     sampling_handler=OpenAISamplingHandler(
         client=AsyncOpenAI(
-            base_url="http://192.168.11.162:1234/v1",  # LM Studio's local API
-            api_key="sk-lm-BjpfcTpU:iel5caRIu5H0PEnBabIF"
+            base_url=f"{get_lm_studio_host_scheme()}://{get_lm_studio_host_address()}:{get_lm_studio_host_port()}/v1",  # LM Studio's local API
+            api_key=get_lm_studio_api_key()
         ),                  # any string works
-        default_model="qwen/qwen3.6-35b-a3b", # model loaded in LM Studio
+        default_model=get_lm_studio_default_model(), # model loaded in LM Studio
     ),
     sampling_handler_behavior="always",  # bypass client entirely
 )

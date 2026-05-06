@@ -32,13 +32,25 @@ logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
     name="open_file"
 )
 async def open_file(path: str):
-    if Path(path).exists():
-        query = f"open \"{path}\""
-    elif Path(safe_path(path)).exists():
-        query = f"open \"{safe_path(path)}\""
-    else:
-        raise FileNotFoundError(f"File not found: {path}")
 
+    def real_file_path(filename: str):
+        absolute_path = Path(filename)
+        tmp_path = Path(safe_path(filename))
+        if absolute_path.exists() or tmp_path.exists():
+            if sys.platform == "win32":
+                if tmp_path.exists():
+                    return f"\"{safe_path(filename)}\""
+                else:
+                    return f"\"{filename}\""
+            else:
+                if tmp_path.exists():
+                    return f"open \"{safe_path(filename)}\""
+                else:
+                    return f"open \"{filename}\""
+        else:
+            raise FileNotFoundError(f"File not found: {filename}")
+
+    query = real_file_path(path)
     subprocess.run(query, shell=True, text=True)
     return TextContent(type="text", text="file opened")
 

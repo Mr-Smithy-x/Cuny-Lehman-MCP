@@ -12,7 +12,6 @@ f5-tts>=1.0.0
 loguru
 bs4
 pypdf2
-pygame
 python-pptx
 typing-extensions
 python-dotenv
@@ -20,3 +19,4 @@ beautifulsoup4
 pydantic
 comtypes
 vininfo
+#pygame

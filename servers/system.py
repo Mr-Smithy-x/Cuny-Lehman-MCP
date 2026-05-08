@@ -73,6 +73,8 @@ def safe_path(raw: str) -> Path:
     resolved = (ROOT / raw.lstrip("/")).resolve()
     if not str(resolved).startswith(str(ROOT)):
         raise ToolError(f"Path traversal denied: '{raw}' escapes the root.")
+    if raw.startswith(str(ROOT)):
+        return Path(raw).resolve()
     return resolved
 
 

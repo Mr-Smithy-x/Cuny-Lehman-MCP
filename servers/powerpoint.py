@@ -10,10 +10,12 @@ from pptx.enum.chart import XL_CHART_TYPE
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
+from system import safe_path
+
 # ── Server Setup ───────────────────────────────────────────────────────────────
 mcp = FastMCP("PowerPointProDesigner")
 
-CWD: Path = Path(os.environ.get("FS_ROOT", os.getcwd())).resolve()
+CWD: Path = Path(os.environ.get("FS_ROOT", "/tmp/mcp-fs")).resolve()
 CWD.mkdir(parents=True, exist_ok=True)
 
 # ── Design System ──────────────────────────────────────────────────────────────
@@ -86,7 +88,7 @@ def cwd_resource() -> str:
 
 def get_pptx(path: str) -> Presentation:
     """Load the existing presentation or create a new blank one."""
-    return Presentation(path) if os.path.exists(path) else Presentation()
+    return Presentation(str(safe_path(path))) if os.path.exists(str(safe_path(path))) else Presentation(str(safe_path(path)))
 
 
 def resolve_theme(theme_name: str) -> dict:
@@ -268,6 +270,7 @@ def create_presentation(
             bold=False, align=PP_ALIGN.LEFT,
         )
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Created styled title slide → {file_path}"
 
@@ -306,7 +309,7 @@ def add_section_title_slide(
 
     # Thin centered underline accent
     add_rect(slide, 4.5, 4.75, 4.3, 0.05, t["accent"])
-
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added section title slide to {file_path}"
 
@@ -358,6 +361,7 @@ def add_bullet_slide(
         font_size=bullet_size, font_color=t["text_dark"], bullet_color=t["primary"],
     )
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added bullet slide (font {bullet_size}pt) to {file_path}"
 
@@ -402,6 +406,7 @@ def add_prose_slide(
         word_wrap=True,
     )
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added prose slide (font {body_size}pt) to {file_path}"
 
@@ -461,6 +466,7 @@ def add_two_column_slide(
     add_bullet_textbox(slide, left_points,  LEFT_X,  BODY_Y, COL_W, BODY_H, left_size,  t["text_dark"], t["primary"])
     add_bullet_textbox(slide, right_points, RIGHT_X, BODY_Y, COL_W, BODY_H, right_size, t["text_dark"], t["primary"])
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added two-column slide to {file_path}"
 
@@ -524,6 +530,7 @@ def add_stat_callout_slide(
                     font_size=lbl_size, font_color=t["text_light"],
                     bold=False, align=PP_ALIGN.CENTER)
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added stat callout slide ({n} stats) to {file_path}"
 
@@ -563,6 +570,7 @@ def add_chart_slide(
     fill.solid()
     fill.fore_color.rgb = t["primary"]
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added chart slide to {file_path}"
 
@@ -611,6 +619,7 @@ def add_table_slide(
                 cell.fill.solid()
                 cell.fill.fore_color.rgb = t["bg_light"]
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added table slide to {file_path}"
 
@@ -635,6 +644,7 @@ def add_image_slide(
 
     slide.shapes.add_picture(image_path, Inches(2.5), Inches(1.6), height=Inches(5.0))
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added image slide to {file_path}"
 
@@ -672,6 +682,7 @@ def add_quote_slide(
                     font_size=attr_size, font_color=t["secondary"],
                     bold=False, align=PP_ALIGN.RIGHT)
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added quote slide to {file_path}"
 
@@ -709,6 +720,7 @@ def add_agenda_slide(
         add_textbox(slide, item, x=1.05, y=y + 0.06, w=11.8, h=item_h,
                     font_size=item_size, font_color=t["text_dark"], bold=False)
 
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Added agenda slide ({len(items)} items) to {file_path}"
 
@@ -718,6 +730,7 @@ def add_agenda_slide(
 @mcp.tool()
 def inspect_deck(file_path: str):
     """Returns a structural summary of the presentation (slide count, shape content)."""
+    file_path = str(safe_path(file_path))
     if not os.path.exists(file_path):
         return "File not found."
     prs = Presentation(file_path)
@@ -731,6 +744,7 @@ def inspect_deck(file_path: str):
 @mcp.tool()
 def read_slide_details(file_path: str, slide_idx: int):
     """Returns every shape on a slide with its index, type, and text content."""
+    file_path = str(safe_path(file_path))
     if not os.path.exists(file_path):
         return "File not found."
     prs = Presentation(file_path)
@@ -753,6 +767,8 @@ def update_shape_text(file_path: str, slide_idx: int, shape_idx: int, new_text: 
         if not shape.has_text_frame:
             return "Error: shape has no text frame."
         shape.text_frame.text = new_text
+
+        file_path = str(safe_path(file_path))
         prs.save(file_path)
         return f"Updated slide {slide_idx}, shape {shape_idx}."
     except Exception as e:
@@ -768,6 +784,7 @@ def delete_slide(file_path: str, slide_idx: int):
     if slide_idx >= len(slides):
         return "Error: slide index out of range."
     xml_slides.remove(slides[slide_idx])
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Deleted slide {slide_idx}."
 
@@ -779,6 +796,8 @@ def clear_slide(file_path: str, slide_idx: int):
     slide = prs.slides[slide_idx]
     for shape in list(slide.shapes):
         shape._element.getparent().remove(shape._element)
+
+    file_path = str(safe_path(file_path))
     prs.save(file_path)
     return f"Cleared all content from slide {slide_idx}."
 

@@ -27,9 +27,9 @@ logger.remove()
 logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
 
 @mcp.tool(
-    title="Open file",
-    description="Open a file, if the file contains a path starting with \\Users then we know that its on the active users directory otherwise it will check the mcp root directory.",
-    name="open_file"
+    title="Open file or folder",
+    description=r"Open a file, if the file contains a path starting with \Users or C:/ then we know that its on the active users directory otherwise it will check the mcp root directory. This can also be used to open folder aslong as the filename is not being requested.",
+    name="open_file_or_folder"
 )
 async def open_file(path: str):
 

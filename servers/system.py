@@ -51,7 +51,10 @@ async def open_file(path: str):
             raise FileNotFoundError(f"File not found: {filename}")
 
     query = real_file_path(path)
-    subprocess.run(query, shell=True, text=True)
+    if sys.platform == "win32" and Path(query).is_dir():
+        subprocess.run(["explorer", query], check=True)
+    else:
+        subprocess.run(query, shell=True, text=True)
     return TextContent(type="text", text="file opened")
 
 """

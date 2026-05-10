@@ -1,15 +1,15 @@
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 from typing import Annotated
-import os
-import shutil
+
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import TextContent
 from pydantic import Field
-from PyPDF2 import PdfReader
 
 from network import read_pdf
 
